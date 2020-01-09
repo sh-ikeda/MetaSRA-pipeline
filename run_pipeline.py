@@ -10,10 +10,10 @@ import json
 from sets import Set
 import sys
 from collections import defaultdict, deque
-import json
 import dill
 import os
 from os.path import join
+import datetime
 
 import map_sra_to_ontology
 from map_sra_to_ontology import ontology_graph
@@ -34,9 +34,24 @@ def main():
      
     # Map key-value pairs to ontologies
     with open(input_f, "r") as f:
-        tag_to_vals = json.load(f)
+        ## changed by shikeda
+        # tag_to_vals = json.load(f)
+        biosample_json = json.load(f)
+
+    tag_to_vals = []
+    ct = datetime.datetime.now()
+    sys.stderr.write('[{}] Parsing BioSample JSON\n'.format(ct))
+    for tag_to_val in biosample_json:
+        entry = {}
+        entry["accession"] = tag_to_val["accession"]
+        for k in tag_to_val["characteristics"]:
+            entry[k] = tag_to_val["characteristics"][k][0]["text"]
+        tag_to_vals.append(entry)
+        ## end
 
     # Load ontologies
+    ct = datetime.datetime.now()
+    sys.stderr.write('[{}] Loading ontologies\n'.format(ct))
     ont_name_to_ont_id = {
         "UBERON":"12",
         "CL":"1",
@@ -47,8 +62,14 @@ def main():
     pipeline = p_48()
 
     all_mappings = []
+    ct = datetime.datetime.now()
+    sys.stderr.write('[{}] Mapping\n'.format(ct))
+    i = 0
     for tag_to_val in tag_to_vals:
-        sample_acc_to_matches = {}
+        if i % 2 == 0 :
+            ct = datetime.datetime.now()
+            sys.stderr.write('[{}] {}\n'.format(ct, i))
+        i += 1
         mapped_terms, real_props = pipeline.run(tag_to_val)
         mappings = {
             "mapped_terms":[x.to_dict() for x in mapped_terms],
@@ -57,7 +78,14 @@ def main():
         all_mappings.append(mappings)
 
     outputs = []
+    ct = datetime.datetime.now()
+    sys.stderr.write('[{}] key_vals\n'.format(ct))
+    i = 0
     for tag_to_val, mappings in zip(tag_to_vals, all_mappings):
+        if i % 2 == 0 :
+            ct = datetime.datetime.now()
+            sys.stderr.write('[{}] {}\n'.format(ct, i))
+        i += 1
         outputs.append(
             run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mappings)
         )
@@ -67,26 +95,39 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
     
     mapped_terms = []
     real_val_props = []
+    mapped_terms_details = []
     for mapped_term_data in mapping_data["mapped_terms"]:
         term_id = mapped_term_data["term_id"]
         for ont in ont_id_to_og.values():
             if term_id in ont.get_mappable_term_ids():
                 mapped_terms.append(term_id)
+                ## added by shikeda
+                mapped_term_detail = mapped_term_data.copy()
+                mapped_term_detail["term_name"] = ont.id_to_term[term_id].name
+                mapped_terms_details.append(mapped_term_detail)
+                ## end
                 break
     for real_val_data in mapping_data["real_value_properties"]:
         real_val_prop = {
             "unit_id":real_val_data["unit_id"], 
             "value":real_val_data["value"], 
-            "property_id":real_val_data["property_id"]
+            "property_id":real_val_data["property_id"],
+            ## added by shikeda
+            "original_key":real_val_data["original_key"], 
+            "consequent":real_val_data["consequent"], 
+            "path_to_mapping":real_val_data["path_to_mapping"]
+            ## end
         }
         real_val_props.append(real_val_prop)
 
     # Add super-terms of mapped terms to the list of ontology term features   
+    ## commented out by shikeda
     sup_terms = Set()
     for og in ont_id_to_og.values():
         for term_id in mapped_terms:
             sup_terms.update(og.recursive_relationship(term_id, ['is_a', 'part_of']))
     mapped_terms = list(sup_terms)
+    ## end
 
     predicted, confidence = run_sample_type_predictor.run_sample_type_prediction(
         tag_to_val, 
@@ -95,10 +136,19 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
     )
 
     mapping_data = {
-        "mapped ontology terms": mapped_terms, 
+        ## changed by shikeda
+        # "mapped ontology terms": mapped_terms, 
+        "mapped ontology terms": mapped_terms_details,
+        ## end
         "real-value properties": real_val_props, 
         "sample type": predicted, 
         "sample-type confidence": confidence}
+
+    # added by shikeda
+    accession = tag_to_val.get("accession")
+    if accession:
+        mapping_data["accession"] = accession
+    # end
 
     return mapping_data
     #print json.dumps(mapping_data, indent=4, separators=(',', ': '))

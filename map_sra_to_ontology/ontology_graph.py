@@ -459,7 +459,11 @@ def parse_entity(lines, restrict_to_idspaces):
         for syn in raw_syns:
             m = re.search('\".+\"', syn)
             if m:
-                syn_type = syn.split('"')[2].strip().split()[0]
+                try:
+                    #syn_type = syn.split('"')[2].strip().split()[0]
+                    syn_type = re.split(r'[^\\]?"', syn)[2].strip().split()[0]
+                except:
+                    print("error:", syn)
                 parsed_syn = m.group(0)[1:-1].strip()
                 synonyms.add(Synonym(parsed_syn, syn_type))
         return synonyms
