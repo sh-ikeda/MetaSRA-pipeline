@@ -14,6 +14,7 @@ import dill
 import os
 from os.path import join
 import datetime
+from multiprocessing import Pool
 
 import map_sra_to_ontology
 from map_sra_to_ontology import ontology_graph
@@ -28,10 +29,11 @@ from map_sra_to_ontology import pipeline_components as pc
 def main():
     parser = OptionParser()
     #parser.add_option("-f", "--key_value_file", help="JSON file storing key-value pairs describing sample")
+    parser.add_option("-n", "--processes", help="# of processes",
+                      dest="processes", type="int", default=1)
     (options, args) = parser.parse_args()
-   
     input_f = args[0]
-     
+
     # Map key-value pairs to ontologies
     with open(input_f, "r") as f:
         ## changed by shikeda
@@ -77,18 +79,25 @@ def main():
         }
         all_mappings.append(mappings)
 
-    outputs = []
+    # outputs = []
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] key_vals\n'.format(ct))
-    i = 0
-    for tag_to_val, mappings in zip(tag_to_vals, all_mappings):
-        if i % 2 == 0 :
-            ct = datetime.datetime.now()
-            sys.stderr.write('[{}] {}\n'.format(ct, i))
-        i += 1
-        outputs.append(
-            run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mappings)
-        )
+    # i = 0
+    # for tag_to_val, mappings in zip(tag_to_vals, all_mappings):
+    #     if i % 2 == 0 :
+    #         ct = datetime.datetime.now()
+    #         sys.stderr.write('[{}] {}\n'.format(ct, i))
+    #     i += 1
+    #     outputs.append(
+    #         run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mappings)
+    #     )
+    p = Pool(options.processes)
+    args = [(tag_to_val, ont_id_to_og, mappings)
+            for tag_to_val in tag_to_vals
+            for mappings in all_mappings]
+    outputs = p.map(run_pipeline_on_key_vals_wrapper, args)
+    ct = datetime.datetime.now()
+    sys.stderr.write('[{}] Done.\n'.format(ct))
     print json.dumps(outputs, indent=4, separators=(',', ': '))
 
 def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data): 
@@ -153,6 +162,8 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
     return mapping_data
     #print json.dumps(mapping_data, indent=4, separators=(',', ': '))
 
+def run_pipeline_on_key_vals_wrapper(args):
+    return run_pipeline_on_key_vals(*args)
 
 #def run_pipeline(tag_to_val, pipeline):
 #    pipeline = p_48()
