@@ -7,7 +7,6 @@
 
 from optparse import OptionParser
 import json
-from sets import Set
 import sys
 from collections import defaultdict, deque
 import dill
@@ -15,24 +14,33 @@ import os
 from os.path import join
 import datetime
 from multiprocessing import Pool
+import pkg_resources as pr
 
 import map_sra_to_ontology
 from map_sra_to_ontology import ontology_graph
 from map_sra_to_ontology import load_ontology
-from map_sra_to_ontology import predict_sample_type
 from map_sra_to_ontology import config
-from map_sra_to_ontology import predict_sample_type
-from map_sra_to_ontology import run_sample_type_predictor
-from predict_sample_type.learn_classifier import *
+# from map_sra_to_ontology import predict_sample_type
+# sys.stderr.write('Importing run_sample_type_predictor\n')
+# from map_sra_to_ontology import run_sample_type_predictor
+# sys.stderr.write('Importing predict_sample_type.learn_classifier\n')
+# from predict_sample_type.learn_classifier import *
 from map_sra_to_ontology import pipeline_components as pc
 
 def main():
     parser = OptionParser()
-    #parser.add_option("-f", "--key_value_file", help="JSON file storing key-value pairs describing sample")
+    parser.add_option("-f", "--key_value_file",
+                      help="JSON file storing key-value pairs describing sample",
+                      dest="input_filename")
+    parser.add_option("-o", "--output", help="Output filename",
+                      dest="output_filename", type="str", default="")
     parser.add_option("-n", "--processes", help="# of processes",
                       dest="processes", type="int", default=1)
     (options, args) = parser.parse_args()
-    input_f = args[0]
+    #input_f = args[0]
+    input_f = options.input_filename
+    output_f = options.output_filename
+    processes = options.processes
 
     # Map key-value pairs to ontologies
     with open(input_f, "r") as f:
@@ -54,51 +62,79 @@ def main():
     # Load ontologies
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] Loading ontologies\n'.format(ct))
-    ont_name_to_ont_id = {
-        "UBERON":"12",
-        "CL":"1",
-        "DOID":"2",
-        "EFO":"16",
-        "CVCL":"4"}
-    ont_id_to_og = {x:load_ontology.load(x)[0] for x in ont_name_to_ont_id.values()}
-    pipeline = p_48()
+    ontologies_dill = pr.resource_filename(__name__, "pipeline_preparations.dill")
+
+    dill.load_session(ontologies_dill)
+    # ont_name_to_ont_id = {
+    #     "UBERON":"12",
+    #     "CL":"1",
+    #     "DOID":"2",
+    #     "EFO":"16",
+    #     "CVCL":"4"}
+    # ont_id_to_og = {x:load_ontology.load(x)[0] for x in list(ont_name_to_ont_id.values())}
+    # pipeline = p_48()
 
     all_mappings = []
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] Mapping\n'.format(ct))
     i = 0
     for tag_to_val in tag_to_vals:
-        if i % 2 == 0 :
+        if i % 2 == 0:
             ct = datetime.datetime.now()
             sys.stderr.write('[{}] {}\n'.format(ct, i))
         i += 1
         mapped_terms, real_props = pipeline.run(tag_to_val)
         mappings = {
-            "mapped_terms":[x.to_dict() for x in mapped_terms],
+            "mapped_terms": [x.to_dict() for x in mapped_terms],
             "real_value_properties": [x.to_dict() for x in real_props]
         }
         all_mappings.append(mappings)
 
-    # outputs = []
+    # all_mappings = []
+    # ct = datetime.datetime.now()
+    # sys.stderr.write('[{}] Mapping with {} processes.\n'.format(ct, processes))
+    ## Implementation with multiprocessing.Pool directly. This does not work.
+    # p = Pool(processes)
+    # pipeline_results = p.map(pipeline.run, tag_to_vals)
+    # for pipeline_result in pipeline_results:
+    #     mappings = {
+    #         "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
+    #         "real_value_properties": [x.to_dict() for x in pipeline_result[1]]
+    #     }
+    #     all_mappings.append(mappings)
+    ## end
+
+    # pipeline_results = pipeline.run_mp(processes, tag_to_vals)
+    # for pipeline_result in pipeline_results:
+    #     mappings = {
+    #         "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
+    #         "real_value_properties": [x.to_dict() for x in pipeline_result[1]]
+    #     }
+    #     all_mappings.append(mappings)
+
     ct = datetime.datetime.now()
-    sys.stderr.write('[{}] key_vals\n'.format(ct))
-    # i = 0
-    # for tag_to_val, mappings in zip(tag_to_vals, all_mappings):
-    #     if i % 2 == 0 :
-    #         ct = datetime.datetime.now()
-    #         sys.stderr.write('[{}] {}\n'.format(ct, i))
-    #     i += 1
-    #     outputs.append(
-    #         run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mappings)
-    #     )
-    p = Pool(options.processes)
-    args = [(tag_to_val, ont_id_to_og, mappings)
-            for tag_to_val in tag_to_vals
-            for mappings in all_mappings]
-    outputs = p.map(run_pipeline_on_key_vals_wrapper, args)
-    ct = datetime.datetime.now()
+    sys.stderr.write('[{}] Run pipeline on key vals\n'.format(ct, processes))
+
+    i = 0
+    outputs = []
+    for tag_to_val, mappings in zip(tag_to_vals, all_mappings):
+        if i % 2 == 0:
+            ct = datetime.datetime.now()
+            sys.stderr.write('[{}] {}\n'.format(ct, i))
+        i += 1
+        outputs.append(run_pipeline_on_key_vals(tag_to_val,
+                                                ont_id_to_og,
+                                                mappings))
+
+    sys.stderr.write('[{}] Writing.\n'.format(ct))
+    output_json = json.dumps(outputs, indent=4, separators=(',', ': '))
+    if output_f != "":
+        with open(output_f, mode='w') as f:
+            f.write(output_json)
+    else:
+        print(output_json)
     sys.stderr.write('[{}] Done.\n'.format(ct))
-    print json.dumps(outputs, indent=4, separators=(',', ': '))
+
 
 def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data): 
     
@@ -107,7 +143,7 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
     mapped_terms_details = []
     for mapped_term_data in mapping_data["mapped_terms"]:
         term_id = mapped_term_data["term_id"]
-        for ont in ont_id_to_og.values():
+        for ont in list(ont_id_to_og.values()):
             if term_id in ont.get_mappable_term_ids():
                 mapped_terms.append(term_id)
                 ## added by shikeda
@@ -131,27 +167,29 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
 
     # Add super-terms of mapped terms to the list of ontology term features   
     ## commented out by shikeda
-    sup_terms = Set()
-    for og in ont_id_to_og.values():
+    sup_terms = set()
+    for og in list(ont_id_to_og.values()):
         for term_id in mapped_terms:
             sup_terms.update(og.recursive_relationship(term_id, ['is_a', 'part_of']))
     mapped_terms = list(sup_terms)
     ## end
 
-    predicted, confidence = run_sample_type_predictor.run_sample_type_prediction(
-        tag_to_val, 
-        mapped_terms, 
-        real_val_props
-    )
+    # commented out by shikeda
+    # predicted, confidence = run_sample_type_predictor.run_sample_type_prediction(
+    #     tag_to_val, 
+    #     mapped_terms, 
+    #     real_val_props
+    # )
+    # end
 
     mapping_data = {
         ## changed by shikeda
         # "mapped ontology terms": mapped_terms, 
         "mapped ontology terms": mapped_terms_details,
+        "real-value properties": real_val_props}
+        # "sample type": predicted, 
+        # "sample-type confidence": confidence}
         ## end
-        "real-value properties": real_val_props, 
-        "sample type": predicted, 
-        "sample-type confidence": confidence}
 
     # added by shikeda
     accession = tag_to_val.get("accession")

@@ -1,8 +1,10 @@
 import pkg_resources as pr
 import json
 
-import config
-import ontology_graph
+# from . import config
+# from . import ontology_graph
+from map_sra_to_ontology import config
+from map_sra_to_ontology import ontology_graph
 
 def load(ontology_index):
     resource_package = __name__
@@ -18,7 +20,7 @@ def load(ontology_index):
     exclude_terms = ont_config["exclude_terms"] 
 
     ont_to_loc = {x:y for x,y 
-        in config.ontology_name_to_location().iteritems() 
+        in config.ontology_name_to_location().items() 
         if x in include_ontologies}
     og = ontology_graph.build_ontology(ont_to_loc, 
         restrict_to_idspaces=restrict_to_idspaces,
@@ -30,7 +32,7 @@ def load(ontology_index):
 
 def main():
     og, i, r = load("4")
-    print og.id_to_term["CVCL:C792"]
+    print(og.id_to_term["CVCL:C792"])
 
 if __name__ == "__main__":
     main()

@@ -17,34 +17,38 @@ resource_package = __name__
 def main():
     # Test that module is functioning
     s = SpecialistLexicon("/scratch/mnbernstein/LEX")
-    print s.search('tumor')
+    print(s.search('tumor'))
 
 
 class SpecialistLexicon:
     def __init__(self, lex_loc):
-        print "loading SPECIALIST Lexicon..."
+        print("loading SPECIALIST Lexicon...")
         self.lexicon = load_lexicon(lex_loc)
         self.eui_array = []
 
-        print "building SPECIALIST Lexicon trie..."
+        print("building SPECIALIST Lexicon trie...")
         tups = []
         curr_i = 0
-        for eui, lex_info in self.lexicon.iteritems():
+        for eui, lex_info in self.lexicon.items():
             self.eui_array.append(eui)
 
-            tups.append((lex_info["base"].decode('utf-8'), [curr_i]))
+            # tups.append((lex_info["base"].decode('utf-8'), [curr_i]))
+            tups.append((lex_info["base"], [curr_i]))
 
             if "spelling variants" in lex_info:
                 for spell_var in lex_info["spelling variants"]:
-                    tups.append((spell_var.decode('utf-8'), [curr_i]))
+                    # tups.append((spell_var.decode('utf-8'), [curr_i]))
+                    tups.append((spell_var, [curr_i]))
 
             if "nominalization" in lex_info:
                 for nom in lex_info["nominalization"]:
-                    tups.append((nom.decode('utf-8'), [curr_i]))
+                    # tups.append((nom.decode('utf-8'), [curr_i]))
+                    tups.append((nom, [curr_i]))
 
             if "inflection variants" in lex_info:
                 for infl_var in lex_info["inflection variants"]:
-                    tups.append((infl_var.decode('utf-8'), [curr_i]))
+                    # tups.append((infl_var.decode('utf-8'), [curr_i]))
+                    tups.append((infl_var, [curr_i]))
 
             curr_i += 1
 
@@ -108,7 +112,7 @@ def add_trademarks(lexicon):
             chem = vals[2]
 
             if eui not in lexicon:
-                print "WARNING! Attempt trademarks, but %s is not in the lexicon!" % eui
+                print("WARNING! Attempt trademarks, but %s is not in the lexicon!" % eui)
                 continue
 
             if "trademark" not in lexicon[eui]:
@@ -127,7 +131,7 @@ def add_nominalization(lexicon):
             nom = vals[1]
 
             if eui not in lexicon:
-                print "WARNING! Attempt nominalization, but %s is not in the lexicon!" % eui
+                print("WARNING! Attempt nominalization, but %s is not in the lexicon!" % eui)
                 continue
 
             if "nominalization" not in lexicon[eui]:
@@ -146,7 +150,7 @@ def add_spelling_variants(lexicon):
             spell_var = vals[1]
 
             if eui not in lexicon:
-                print "WARNING! Attempt spelling variant, but %s is not in the lexicon!" % eui
+                print("WARNING! Attempt spelling variant, but %s is not in the lexicon!" % eui)
                 continue
 
             if "spelling variants" not in lexicon[eui]:
@@ -164,7 +168,7 @@ def add_inflection_variants(lexicon):
             infl_var = vals[1]
 
             if eui not in lexicon:
-                print "WARNING! Attempting inflection variant, %s is not in the lexicon!" % eui
+                print("WARNING! Attempting inflection variant, %s is not in the lexicon!" % eui)
                 continue
         
             if infl_var == lexicon[eui]["base"]:

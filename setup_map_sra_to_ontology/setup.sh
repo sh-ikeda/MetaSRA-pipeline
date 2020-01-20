@@ -3,10 +3,12 @@
 # TODO add the map_sra_to_ontology module to the PYTHONPATH
 # Example:
 #   export PYTHONPATH=<path to directory containing map_sra_to_ontology>:$PYTHONPATH
+export PYTHONPATH=/mnt/c/Users/togotv_dell1/work/biosample/MetaSRA-pipeline/:$PYTHONPATH
 
 # TODO add the bktree module to the PYTHONPATH
 # Example:
 #   export PYTHONPATH=<path to directory containing bktree.py script>:$PYTHONPATH
+export PYTHONPATH=/mnt/c/Users/togotv_dell1/work/biosample/MetaSRA-pipeline/bktree/:$PYTHONPATH
 
 # Download ontologies
 echo "Downloading ontologies..."

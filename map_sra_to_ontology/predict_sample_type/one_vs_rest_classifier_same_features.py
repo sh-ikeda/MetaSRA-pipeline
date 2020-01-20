@@ -172,7 +172,7 @@ class OneVsRestClassifier:
 
         class_to_confidence = {}
 
-        for clss, classif in self.class_to_classifier.iteritems():
+        for clss, classif in self.class_to_classifier.items():
             new_q_feature_v = self._features(q_feature_v)
             pred_probs = classif.predict_proba(
                 sparse.csr_matrix([new_q_feature_v])
@@ -182,7 +182,7 @@ class OneVsRestClassifier:
 
 
         if self.use_predicted_term_rules:
-            print "Using predicted term rules"
+            print("Using predicted term rules")
 
             is_xenograft = False
             for pred_term in predicted_terms:
@@ -229,7 +229,7 @@ class OneVsRestClassifier:
                 # If 'stem cell' is mapped, then it can't be an immortalized 
                 # cell line, tissue, or primary cell sample
                 if "CL:0000034" in predicted_terms:
-                    print "Sample mapped to stem cell term CL:0000034" 
+                    print("Sample mapped to stem cell term CL:0000034") 
                     class_to_confidence["cell_line"] = 0.0
                     class_to_confidence["tissue"] = 0.0
                     class_to_confidence["primary_cells"] = 0.0
@@ -254,18 +254,18 @@ class OneVsRestClassifier:
                      
 
         sum_conf = sum(class_to_confidence.values())
-        print "Class to confidence before normalizing: %s" % class_to_confidence
-        print "Sum before normalizing: %f" % sum_conf
+        print("Class to confidence before normalizing: %s" % class_to_confidence)
+        print("Sum before normalizing: %f" % sum_conf)
         if sum_conf > 0:
             class_to_confidence = {
                 k:v/sum_conf 
-                for k,v in class_to_confidence.iteritems()
+                for k,v in class_to_confidence.items()
             }
-        print "Class to confidence: %s" % class_to_confidence
+        print("Class to confidence: %s" % class_to_confidence)
         return max(
             [
                 (k,v) 
-                for k,v in class_to_confidence.iteritems()
+                for k,v in class_to_confidence.items()
             ], 
             key=lambda x: x[1]
         )
