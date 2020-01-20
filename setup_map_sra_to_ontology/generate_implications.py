@@ -1,7 +1,6 @@
 from optparse import OptionParser
 from collections import defaultdict
 import json
-from sets import Set
 from collections import deque
 import marisa_trie as mt
 
@@ -17,7 +16,7 @@ def generate_implications(og_a, og_b):
 
     term_to_implications = defaultdict(lambda: [])
     temp = subterm_consequent_terms(og_a, og_b)
-    for term, implied_terms in temp.iteritems():
+    for term, implied_terms in temp.items():
         term_to_implications[term] += implied_terms
 
     # Filter terms 
@@ -25,10 +24,10 @@ def generate_implications(og_a, og_b):
     with open("term_to_superterm_linked_terms.json", "r") as f:
         term_to_superterm_linked_terms = json.load(f)
     new_term_to_implications = defaultdict(lambda: [])
-    for term, conseq_terms in term_to_implications.iteritems():
+    for term, conseq_terms in term_to_implications.items():
         if term in term_to_superterm_linked_terms:
-            linked_terms = Set(term_to_superterm_linked_terms[term])
-            conseq_terms = Set(conseq_terms).difference(linked_terms)
+            linked_terms = set(term_to_superterm_linked_terms[term])
+            conseq_terms = set(conseq_terms).difference(linked_terms)
             if len(conseq_terms) > 0:
                 new_term_to_implications[term] = list(conseq_terms)
         else:
@@ -42,10 +41,10 @@ def main():
     efo_disease_og, x,y = load_ontology.load("3")
     efo_cellline_og, x,y = load_ontology.load("10")
 
-    print "Generating cell line to disease implications..."
+    print("Generating cell line to disease implications...")
     term_to_implications = generate_implications(efo_disease_og, efo_cellline_og)
     temp = generate_implications(doid_disease_og, efo_cellline_og)
-    for term, implied_terms in temp.iteritems():
+    for term, implied_terms in temp.items():
         term_to_implications[term] += implied_terms
     with open("cellline_to_disease_implied_terms.json", "w") as f:
         f.write(json.dumps(term_to_implications, indent=4, separators=(',', ': '), sort_keys=True))
@@ -78,7 +77,7 @@ class Mapper:
                 try:
                     tups.append((syn.syn_str.decode('utf-8'), [curr_i]))
                 except UnicodeEncodeError:
-                    print "Warning! Unable to decode unicode of a synonym for term %s" % term.id
+                    print("Warning! Unable to decode unicode of a synonym for term %s" % term.id)
             curr_i += 1
         return mt.RecordTrie("<i", tups), terms_array
 
@@ -92,7 +91,7 @@ def subterm_consequent_terms(og_a, og_b):
     a_mapper = Mapper(og_a)
 
     b_terms_not_in_a = deque()
-    for b_term in og_b.id_to_term.values():
+    for b_term in list(og_b.id_to_term.values()):
         b_strs = [b_term.name]
         b_strs += [x.syn_str for x in b_term.synonyms]
         b_in_a = False
@@ -106,10 +105,10 @@ def subterm_consequent_terms(og_a, og_b):
     total = len(og_a.id_to_term)
     c = 1
 
-    for a_term in og_a.id_to_term.values():
+    for a_term in list(og_a.id_to_term.values()):
 
         if c % 100 == 0:
-            print "Examined %d/%d terms" % (c, total)
+            print("Examined %d/%d terms" % (c, total))
         c += 1
 
 
@@ -126,7 +125,7 @@ def subterm_consequent_terms(og_a, og_b):
                     try:
                         # Make sure substring is of full tokens
                         a_str_in_b_str = True
-                        b_toks = Set(b_str.split(" "))
+                        b_toks = set(b_str.split(" "))
                         a_toks = a_str.split(" ")
                         for a_tok in a_toks:
                             if a_tok not in b_toks:
@@ -135,7 +134,7 @@ def subterm_consequent_terms(og_a, og_b):
  
                         if a_str_in_b_str and a_str in b_str and a_str != b_str and len(a_str) > 2 and len(b_str) > 2:
                             term_to_implications[b_term.id].append(a_term.id)
-                            print "Found match %s --> %s: '%s' --> '%s'" % (b_term.id, a_term.id, b_str, a_str)
+                            print("Found match %s --> %s: '%s' --> '%s'" % (b_term.id, a_term.id, b_str, a_str))
                     except UnicodeDecodeError:
                         pass
                         #print "Error decoding strings trying match %s with %s" % (b_term.id, a_term.id)

@@ -48,7 +48,7 @@ def term_to_linked_superterms(og):
         for sup_term in og.recursive_relationship(t_id, ["is_a", "part_of"]):
             if sup_term in term_to_linked_terms:
                 for linked_term in term_to_linked_terms[sup_term]:
-                    print "Linking term %s --> %s" % (t_id, linked_term) 
+                    print("Linking term %s --> %s" % (t_id, linked_term)) 
                     term_to_linkedsup_terms[t_id].append(linked_term)
 
     return term_to_linkedsup_terms

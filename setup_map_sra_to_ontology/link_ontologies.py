@@ -6,7 +6,6 @@
 from optparse import OptionParser
 from collections import defaultdict
 import json
-from sets import Set
 from collections import deque
 import marisa_trie as mt
 
@@ -42,7 +41,7 @@ def main():
 
 class Mapper:
     def __init__(self, og, link_syn_types=None):
-        self.link_syn_types = Set(link_syn_types)
+        self.link_syn_types = set(link_syn_types)
         self.map_trie, self.terms_array = self._trie_from_ontology(og)
 
     def map_string(self, query):
@@ -70,27 +69,27 @@ class Mapper:
                 try:
                     tups.append((syn.syn_str.decode('utf-8'), [curr_i]))
                 except UnicodeEncodeError:
-                    print "Warning! Unable to decode unicode of a synonym for term %s" % term.id
+                    print("Warning! Unable to decode unicode of a synonym for term %s" % term.id)
             curr_i += 1
         return mt.RecordTrie("<i", tups), terms_array
 
 def linked_terms(og_a, og_b, link_syn_types=None):
     if not link_syn_types:
-        link_syn_types = Set(["EXACT"])
+        link_syn_types = set(["EXACT"])
     else:
-        link_syn_types = Set(link_syn_types)
+        link_syn_types = set(link_syn_types)
 
     a_mapper = Mapper(og_a, link_syn_types=link_syn_types)
-    b_to_a = defaultdict(lambda: Set())
-    for b_term in og_b.id_to_term.values():
+    b_to_a = defaultdict(lambda: set())
+    for b_term in list(og_b.id_to_term.values()):
         b_ref_strs = [b_term.name]
         #b_ref_strs += [syn.syn_str for syn in b_term.synonyms if syn.syn_type == "EXACT"]
         b_ref_strs += [syn.syn_str for syn in b_term.synonyms if syn.syn_type in link_syn_types]
         for b_str in b_ref_strs:
             for a_term in a_mapper.map_string(b_str):
-                print "LINKING terms: %s=%s: '%s' '%s'='%s'" % (b_term.id, a_term.id, b_str, b_term.name, a_term.name)
+                print("LINKING terms: %s=%s: '%s' '%s'='%s'" % (b_term.id, a_term.id, b_str, b_term.name, a_term.name))
                 b_to_a[b_term.id].add(a_term.id)
-    return {k:list(v) for k,v in b_to_a.iteritems()}
+    return {k:list(v) for k,v in b_to_a.items()}
 
 
 if __name__ == "__main__":
