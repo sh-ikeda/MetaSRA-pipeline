@@ -179,6 +179,10 @@ def add_inflection_variants(lexicon):
             lexicon[eui]["inflection variants"].append(infl_var)       
     return lexicon
 
+
+def dd_init():
+    return {}
+
     
 def parse_LEXICON(lex_loc):
     def process_curr_lines(c_lines):
@@ -210,7 +214,8 @@ def parse_LEXICON(lex_loc):
 
     f_name = join(lex_loc, "LEXICON")
     with open(f_name, "r") as f:
-        lexicon = defaultdict(lambda: {})
+        # lexicon = defaultdict(lambda: {})
+        lexicon = defaultdict(dd_init)
 
         curr_lines = []
         for line in f:

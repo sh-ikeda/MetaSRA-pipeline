@@ -14,11 +14,13 @@ import os
 from os.path import join
 import datetime
 from multiprocessing import Pool
+import concurrent.futures
+from joblib import Parallel, delayed
 import pkg_resources as pr
 
-import map_sra_to_ontology
-from map_sra_to_ontology import ontology_graph
-from map_sra_to_ontology import load_ontology
+# import map_sra_to_ontology
+# from map_sra_to_ontology import ontology_graph
+# from map_sra_to_ontology import load_ontology
 from map_sra_to_ontology import config
 # from map_sra_to_ontology import predict_sample_type
 # sys.stderr.write('Importing run_sample_type_predictor\n')
@@ -93,9 +95,22 @@ def main():
     # all_mappings = []
     # ct = datetime.datetime.now()
     # sys.stderr.write('[{}] Mapping with {} processes.\n'.format(ct, processes))
-    ## Implementation with multiprocessing.Pool directly. This does not work.
+    # ## Implementation with multiprocessing.Pool directly. This does not work.
     # p = Pool(processes)
     # pipeline_results = p.map(pipeline.run, tag_to_vals)
+    # for pipeline_result in pipeline_results:
+    #     mappings = {
+    #         "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
+    #         "real_value_properties": [x.to_dict() for x in pipeline_result[1]]
+    #     }
+    #     all_mappings.append(mappings)
+    # ## end
+
+    ## Implementation with concurrent.futures.
+    # ex = concurrent.futures.ProcessPoolExecutor(processes)
+    # ex = concurrent.futures.ThreadPoolExecutor(processes)
+    # pipeline_results = ex.map(pipeline.run, tag_to_vals)
+    # pipeline_results = Parallel(processes)([delayed(pipeline.run)(tag_to_val)for tag_to_val in tag_to_vals])
     # for pipeline_result in pipeline_results:
     #     mappings = {
     #         "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
@@ -213,6 +228,10 @@ def run_pipeline_on_key_vals_wrapper(args):
 #    }
 #    return mappings
     
+
+def dd_init():
+    return 1.0
+
 def p_48():
     spec_lex = pc.SpecialistLexicon(config.specialist_lex_location())
     inflec_var = pc.SPECIALISTLexInflectionalVariants(spec_lex)
@@ -273,7 +292,8 @@ def p_48():
         infer_cell_line,
         infer_dev_stage,
         cell_culture]
-    return pc.Pipeline(stages, defaultdict(lambda: 1.0))
+    # return pc.Pipeline(stages, defaultdict(lambda: 1.0))
+    return pc.Pipeline(stages, defaultdict(dd_init))
 
 
 if __name__ == "__main__":

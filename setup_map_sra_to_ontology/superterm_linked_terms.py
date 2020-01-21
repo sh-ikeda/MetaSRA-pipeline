@@ -5,7 +5,6 @@
 
 from collections import defaultdict
 import json
-from sets import Set
 from collections import deque
 import marisa_trie as mt
 

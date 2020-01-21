@@ -1,0 +1,4 @@
+map_sra_to_ontology/predict_sample_type/backup/*
+map_sra_to_ontology/obo/*
+map_sra_to_ontology/LEX/*
+pipeline_preparations.dill

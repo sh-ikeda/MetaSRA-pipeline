@@ -8,13 +8,14 @@ from map_sra_to_ontology import ontology_graph
 from map_sra_to_ontology import load_ontology
 from map_sra_to_ontology import predict_sample_type
 from map_sra_to_ontology import config
-from map_sra_to_ontology import predict_sample_type
-sys.stderr.write('Importing run_sample_type_predictor\n')
-from map_sra_to_ontology import run_sample_type_predictor
-sys.stderr.write('Importing predict_sample_type.learn_classifier\n')
-from predict_sample_type.learn_classifier import *
+# sys.stderr.write('Importing run_sample_type_predictor\n')
+# from map_sra_to_ontology import run_sample_type_predictor
+# sys.stderr.write('Importing predict_sample_type.learn_classifier\n')
+# from predict_sample_type.learn_classifier import *
 from map_sra_to_ontology import pipeline_components as pc
 
+def dd_init():
+    return 1.0
 
 def p_48():
     spec_lex = pc.SpecialistLexicon(config.specialist_lex_location())
@@ -76,7 +77,8 @@ def p_48():
         infer_cell_line,
         infer_dev_stage,
         cell_culture]
-    return pc.Pipeline(stages, defaultdict(lambda: 1.0))
+    # return pc.Pipeline(stages, defaultdict(lambda: 1.0))
+    return pc.Pipeline(stages, defaultdict(dd_init))
 
 
 # Load ontologies

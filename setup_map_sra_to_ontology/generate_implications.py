@@ -72,10 +72,12 @@ class Mapper:
         curr_i = 0
         for term in og.get_mappable_terms():
             terms_array.append(term)
-            tups.append((term.name.decode('utf-8'), [curr_i]))
+            # tups.append((term.name.decode('utf-8'), [curr_i]))
+            tups.append((term.name, [curr_i]))
             for syn in [x for x in term.synonyms if x.syn_type == "EXACT"]:
                 try:
-                    tups.append((syn.syn_str.decode('utf-8'), [curr_i]))
+                    # tups.append((syn.syn_str.decode('utf-8'), [curr_i]))
+                    tups.append((syn.syn_str, [curr_i]))
                 except UnicodeEncodeError:
                     print("Warning! Unable to decode unicode of a synonym for term %s" % term.id)
             curr_i += 1
