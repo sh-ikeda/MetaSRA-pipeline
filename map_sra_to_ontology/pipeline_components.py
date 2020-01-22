@@ -136,6 +136,25 @@ class Pipeline:
     #     return p.map(unwrap_pipeline_run,
     #                  zip([self]*len(tag_to_vals), tag_to_vals))
 
+    def run_kv(self, tag, val):
+        tm_graph = TextReasoningGraph(prohibit_cycles=False)
+                
+        # Create initial text-mining-graph
+        kv_node = KeyValueNode(tag, val)
+        tm_graph.add_node(kv_node)
+
+        # Process stages of pipeline
+        for stage in self.stages:
+            tm_graph = stage.run(tm_graph)
+
+        if VERBOSE:
+            print("\n---------GRAPH----------")
+            print(tm_graph)
+            print("------------------------\n")
+
+        return self.extract_mapped_terms(tm_graph)
+
+
     def extract_mapped_terms(self, text_mining_graph):
 
         # TODO EXTRACT MULTIPLE MAPPINGS FOR real-value property!!

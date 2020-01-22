@@ -78,33 +78,61 @@ def main():
 
     all_mappings = []
     ct = datetime.datetime.now()
-    sys.stderr.write('[{}] Mapping\n'.format(ct))
-    i = 0
-    for tag_to_val in tag_to_vals:
-        if i % 2 == 0:
-            ct = datetime.datetime.now()
-            sys.stderr.write('[{}] {}\n'.format(ct, i))
-        i += 1
-        mapped_terms, real_props = pipeline.run(tag_to_val)
-        mappings = {
-            "mapped_terms": [x.to_dict() for x in mapped_terms],
-            "real_value_properties": [x.to_dict() for x in real_props]
-        }
-        all_mappings.append(mappings)
+    sys.stderr.write('[{}] Mapping with {} processes.\n'.format(ct, processes))
+    if processes == 1:
+    ## Simple and valid implementation.
+        i = 0
+        for tag_to_val in tag_to_vals:
+            if i % 2 == 0:
+                ct = datetime.datetime.now()
+                sys.stderr.write('[{}] {}\n'.format(ct, i))
+            i += 1
+            mapped_terms, real_props = pipeline.run(tag_to_val)
+            mappings = {
+                "mapped_terms": [x.to_dict() for x in mapped_terms],
+                "real_value_properties": [x.to_dict() for x in real_props]
+            }
+            all_mappings.append(mappings)
+    ## end
 
+    # ## Run pipeline for unique kv pairs.
     # all_mappings = []
+    # kv_mapping = {}
     # ct = datetime.datetime.now()
-    # sys.stderr.write('[{}] Mapping with {} processes.\n'.format(ct, processes))
-    # ## Implementation with multiprocessing.Pool directly. This does not work.
-    # p = Pool(processes)
-    # pipeline_results = p.map(pipeline.run, tag_to_vals)
-    # for pipeline_result in pipeline_results:
-    #     mappings = {
-    #         "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
-    #         "real_value_properties": [x.to_dict() for x in pipeline_result[1]]
-    #     }
+    # sys.stderr.write('[{}] Mapping\n'.format(ct))
+    # i = 0
+    # for tag_to_val in tag_to_vals:
+    #     if i % 2 == 0:
+    #         ct = datetime.datetime.now()
+    #         sys.stderr.write('[{}] {}\n'.format(ct, i))
+    #     i += 1
+    #     mappings = {}
+    #     mappings["mapped_terms"] = []
+    #     mappings["real_value_properties"] = []
+    #     for k, v in tag_to_val.items():
+    #         if (k, v) not in kv_mapping:
+    #             mapped_terms, real_props = pipeline.run_kv(k, v)
+    #             mapping = {
+    #                 "mapped_terms": [x.to_dict() for x in mapped_terms],
+    #                 "real_value_properties": [x.to_dict() for x in real_props]
+    #             }
+    #             kv_mapping[(k, v)] = mapping
+    #         mappings["mapped_terms"] += kv_mapping[(k, v)]["mapped_terms"]
+    #         mappings["real_value_properties"] += kv_mapping[(k, v)]["real_value_properties"]
     #     all_mappings.append(mappings)
     # ## end
+
+    ## Implementation with multiprocessing.Pool directly. This does not work.
+    else:
+        p = Pool(processes)
+        pipeline_results = p.map(pipeline.run, tag_to_vals)
+        for pipeline_result in pipeline_results:
+            mappings = {
+                "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
+                "real_value_properties": [x.to_dict() for x in pipeline_result[1]]
+            }
+            all_mappings.append(mappings)
+        ## end
 
     ## Implementation with concurrent.futures.
     # ex = concurrent.futures.ProcessPoolExecutor(processes)
