@@ -1,6 +1,6 @@
 FROM python:3.6-buster
 
-COPY . /app/
+COPY . /app/MetaSRA-pipeline/
 
 WORKDIR /app/MetaSRA-pipeline/
 ENV PYTHONPATH /app/MetaSRA-pipeline/:/app/MetaSRA-pipeline/bktree/:/app/MetaSRA-pipeline/map_sra_to_ontology/
