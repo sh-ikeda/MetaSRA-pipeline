@@ -5,5 +5,6 @@
     "CVCL": "ftp://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo",
     "CL": "https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo",
     "CHEBI": "ftp://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi.obo",
-    "UO": "https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/unit.obo" 
+    "UO": "https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/unit.obo",
+    "ORDO": "http://data.bioontology.org/ontologies/ORDO_OBO/submissions/1/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb"
 }

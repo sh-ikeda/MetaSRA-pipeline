@@ -368,6 +368,18 @@
             "CVCL:Z433": "AGE"
         },
         "description": "All CVCL terms in the Cellosaurus relavent for human data"
+    },
+    "19": {
+        "included_ontology_projects": [
+            "ORDO"
+        ],
+        "restrict_to_specific_subgraph": false,
+        "id_spaces": [
+            "Orphanet"
+        ],
+        "exclude_terms": {
+        },
+        "description": "All terms in the ORDO"
     }
 }
     
