@@ -109,8 +109,8 @@ def subterm_consequent_terms(og_a, og_b):
 
     for a_term in list(og_a.id_to_term.values()):
 
-        if c % 100 == 0:
-            print("Examined %d/%d terms" % (c, total))
+        # if c % 100 == 0:
+        #     print("Examined %d/%d terms" % (c, total))
         c += 1
 
 
@@ -136,7 +136,7 @@ def subterm_consequent_terms(og_a, og_b):
  
                         if a_str_in_b_str and a_str in b_str and a_str != b_str and len(a_str) > 2 and len(b_str) > 2:
                             term_to_implications[b_term.id].append(a_term.id)
-                            print("Found match %s --> %s: '%s' --> '%s'" % (b_term.id, a_term.id, b_str, a_str))
+                            # print("Found match %s --> %s: '%s' --> '%s'" % (b_term.id, a_term.id, b_str, a_str))
                     except UnicodeDecodeError:
                         pass
                         #print "Error decoding strings trying match %s with %s" % (b_term.id, a_term.id)

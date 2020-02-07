@@ -89,7 +89,7 @@ def linked_terms(og_a, og_b, link_syn_types=None):
         b_ref_strs += [syn.syn_str for syn in b_term.synonyms if syn.syn_type in link_syn_types]
         for b_str in b_ref_strs:
             for a_term in a_mapper.map_string(b_str):
-                print("LINKING terms: %s=%s: '%s' '%s'='%s'" % (b_term.id, a_term.id, b_str, b_term.name, a_term.name))
+                # print("LINKING terms: %s=%s: '%s' '%s'='%s'" % (b_term.id, a_term.id, b_str, b_term.name, a_term.name))
                 b_to_a[b_term.id].add(a_term.id)
     return {k:list(v) for k,v in b_to_a.items()}
 
