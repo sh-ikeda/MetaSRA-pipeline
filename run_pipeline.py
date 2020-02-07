@@ -49,7 +49,7 @@ def main():
     # Load ontologies
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] Loading ontologies\n'.format(ct))
-    ontologies_dill = pr.resource_filename(__name__, "pipeline_preparations.dill")
+    ontologies_dill = pr.resource_filename(__name__, "pipeline_init.dill")
 
     dill.load_session(ontologies_dill)
     # ont_name_to_ont_id = {
