@@ -33,7 +33,7 @@ def main():
     processes = options.processes
 
     # Map key-value pairs to ontologies
-    with open(input_f, "r") as f:
+    with open(input_f, "r", encoding="utf-8") as f:
         biosample_json = json.load(f)
 
     tag_to_vals = []
