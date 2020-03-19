@@ -67,12 +67,13 @@ def main():
     if processes == 1:
     ## Simple and valid implementation.
         i = 0
+        covered_query_map = dict()
         for tag_to_val in tag_to_vals:
             if i % 2 == 0:
                 ct = datetime.datetime.now()
                 sys.stderr.write('[{}] {}\n'.format(ct, i))
             i += 1
-            mapped_terms, real_props = pipeline.run(tag_to_val)
+            mapped_terms, real_props, covered_query_map = pipeline.run(tag_to_val, covered_query_map)
             mappings = {
                 "mapped_terms": [x.to_dict() for x in mapped_terms],
                 "real_value_properties": [x.to_dict() for x in real_props]

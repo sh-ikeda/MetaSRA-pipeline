@@ -108,7 +108,7 @@ class Pipeline:
         self.stages = stages
         self.scoring_strategy = scoring_strategy
 
-    def run(self, tag_to_val):
+    def run(self, tag_to_val, covered_query_map):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
                 
         # Create initial text-mining-graph
@@ -122,14 +122,18 @@ class Pipeline:
 
         # Process stages of pipeline
         for stage in self.stages:
-            tm_graph = stage.run(tm_graph)
+            if isinstance(stage, FuzzyStringMatching_Stage):
+                tm_graph, covered_query_map = stage.run(tm_graph, covered_query_map)
+            else:
+                tm_graph = stage.run(tm_graph)
 
         if VERBOSE:
             print("\n---------GRAPH----------")
             print(tm_graph)
             print("------------------------\n")
 
-        return self.extract_mapped_terms(tm_graph)
+        mapped_terms, real_value_properties = self.extract_mapped_terms(tm_graph)
+        return mapped_terms, real_value_properties, covered_query_map
 
     # def run_mp(self, np, tag_to_vals):
     #     p = Pool(processes=np)
@@ -938,7 +942,7 @@ class FuzzyStringMatching_Stage:
                     matched.append((str2, dist, match_data[0], match_data[1]))
         return matched
 
-    def run(self, text_mining_graph):
+    def run(self, text_mining_graph, covered_query_map):
         #print("Performing fuzzy string matching...")
         c = 0
         if VERBOSE:
@@ -954,7 +958,12 @@ class FuzzyStringMatching_Stage:
             if not self.match_numeric and is_number(t_node.token_str):
                 continue
 
-            matched = self._edit_below_thresh(t_node.token_str)
+            if t_node.token_str in covered_query_map:
+                matched = covered_query_map[t_node.token_str]
+            else:
+                matched = self._edit_below_thresh(t_node.token_str)
+                covered_query_map[t_node.token_str] = matched
+
             if len(matched) == 0:
                 continue
             min_edit = min([m[1] for m in matched])
@@ -982,7 +991,7 @@ class FuzzyStringMatching_Stage:
                     )
                 )
 
-        return text_mining_graph
+        return text_mining_graph, covered_query_map
 
 
 class TermArtifactCombinations_Stage:
