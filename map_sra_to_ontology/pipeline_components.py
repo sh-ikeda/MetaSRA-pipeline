@@ -140,9 +140,22 @@ class Pipeline:
     #     return p.map(unwrap_pipeline_run,
     #                  zip([self]*len(tag_to_vals), tag_to_vals))
 
+    def run_multiple(self, tag_to_vals):
+        covered_query_map = dict()
+        all_mappings = []
+        for tag_to_val in tag_to_vals:
+            mapped_terms, real_props, covered_query_map = self.run(tag_to_val, covered_query_map)
+            mappings = {
+                "mapped_terms": [x.to_dict() for x in mapped_terms],
+                "real_value_properties": [x.to_dict() for x in real_props]
+            }
+            all_mappings.append(mappings)
+
+        return all_mappings
+
     def run_kv(self, tag, val):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
-                
+
         # Create initial text-mining-graph
         kv_node = KeyValueNode(tag, val)
         tm_graph.add_node(kv_node)

@@ -26,11 +26,14 @@ def main():
                       dest="output_filename", type="str", default="")
     parser.add_option("-n", "--processes", help="# of processes",
                       dest="processes", type="int", default=1)
+    parser.add_option("-d", "--debug", help="debug mode",
+                      dest="dbg", action="store_true")
     (options, args) = parser.parse_args()
 
-    input_f = options.input_filename
-    output_f = options.output_filename
-    processes = options.processes
+    input_f    = options.input_filename
+    output_f   = options.output_filename
+    processes  = options.processes
+    debug_mode = options.dbg
 
     # Map key-value pairs to ontologies
     with open(input_f, "r", encoding="utf-8") as f:
@@ -69,7 +72,7 @@ def main():
         i = 0
         covered_query_map = dict()
         for tag_to_val in tag_to_vals:
-            if i % 2 == 0:
+            if i % 2 == 0 and debug_mode:
                 ct = datetime.datetime.now()
                 sys.stderr.write('[{}] {}\n'.format(ct, i))
             i += 1
@@ -83,14 +86,22 @@ def main():
 
     ## Implementation with multiprocessing.Pool.
     else:
+        # p = Pool(processes)
+        # pipeline_results = p.map(pipeline.run, tag_to_vals)
+        # for pipeline_result in pipeline_results:
+        #     mappings = {
+        #         "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
+        #         "real_value_properties": [x.to_dict() for x in pipeline_result[1]]
+        #     }
+        #     all_mappings.append(mappings)
         p = Pool(processes)
-        pipeline_results = p.map(pipeline.run, tag_to_vals)
-        for pipeline_result in pipeline_results:
-            mappings = {
-                "mapped_terms": [x.to_dict() for x in pipeline_result[0]],
-                "real_value_properties": [x.to_dict() for x in pipeline_result[1]]
-            }
-            all_mappings.append(mappings)
+        size = len(tag_to_vals)/processes
+        res = []
+        for i in range(processes):
+            sub_tag_to_vals = tag_to_vals[int(i*size):int((i+1)*size)]
+            res.append(p.apply_async(pipeline.run_multiple, (sub_tag_to_vals,)))
+        for r in res:
+            all_mappings += r.get()
     ## end
 
     # ## Run pipeline for unique kv pairs.
