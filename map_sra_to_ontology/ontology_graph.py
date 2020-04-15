@@ -197,6 +197,12 @@ def build_ontology(ont_to_loc, restrict_to_idspaces=None,
             for syn in term_to_syns[term.id]:
                 term.synonyms.add(Synonym(syn, "ENRICHED"))
 
+    # Add lowercase string as a synonym
+    for term in list(og.id_to_term.values()):
+        lowered = term.name.lower()
+        if term.name != lowered:
+            term.synonyms.add(Synonym(lowered, "EXACT"))
+
     # Remove specified synonyms
     term_to_remove_syns_f = pr.resource_filename(
         resource_package, 
