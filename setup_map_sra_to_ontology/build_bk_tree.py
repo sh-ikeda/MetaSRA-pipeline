@@ -15,7 +15,8 @@ def main():
         "18", # Cellosaurus with relavent terms for human biology 
         "5", 
         "7", 
-        "9"
+        "9",
+        "19"
     ]
     ogs = [load_ontology.load(x)[0] for x in og_ids]
     str_to_terms = defaultdict(lambda: [])
