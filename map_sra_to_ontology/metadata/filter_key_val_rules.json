@@ -45,7 +45,16 @@
         "DISEASE_ONTOLOGY_URI",
         "SAMPLE_ONTOLOGY_URI",
         "cell ontology uri",
-        "disease ontology uri"
+        "disease ontology uri",
+
+        "INSDC center name",
+        "INSDC first public",
+        "INSDC last update",
+        "INSDC secondary accession",
+        "INSDC status",
+        "NCBI submission model",
+        "NCBI submission package",
+        "accession"
     ],
     "filter_values": [
         "-",
