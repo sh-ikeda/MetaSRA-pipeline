@@ -18,10 +18,14 @@ import json
 import os
 from os.path import join
 
-from . import load_ontology
-from .text_reasoning_graph import *
-from . import ball_tree_distance
-from .load_specialist_lex import SpecialistLexicon
+# from . import load_ontology
+# from .text_reasoning_graph import *
+# from . import ball_tree_distance
+# from .load_specialist_lex import SpecialistLexicon
+import load_ontology
+from text_reasoning_graph import *
+import ball_tree_distance
+from load_specialist_lex import SpecialistLexicon
 
 import bktree
 from bktree import BKTree
@@ -126,6 +130,15 @@ class Pipeline:
                 tm_graph, covered_query_map = stage.run(tm_graph, covered_query_map)
             else:
                 tm_graph = stage.run(tm_graph)
+            # if isinstance(stage, ExactStringMatching_Stage):
+            #     mpt, rvp = self.extract_mapped_terms(tm_graph)
+            #     print(tag_to_val)
+            #     print([x.to_dict() for x in mpt])
+            # if isinstance(stage, TwoCharMappings_Stage):
+            #     mpt, rvp = self.extract_mapped_terms(tm_graph)
+            #     print(tag_to_val)
+            #     print([x.to_dict() for x in mpt])
+
 
         if VERBOSE:
             print("\n---------GRAPH----------")
@@ -511,8 +524,11 @@ class BlockCellLineNonCellLineKey_Stage:
             "EFO:0000322", 
             "EFO:0000324"
         ])
-        #self.cell_line_phrases = set(["source_name"])
-        self.cell_line_phrases = set()
+        self.cell_line_phrases = set(["source name"])
+        #self.cell_line_phrases = set()
+
+        self.cell_line_keys_low_prior = set([])
+        self.cell_line_phrases_low_prior = set(["source name"])
 
         cvcl_og, x,y = load_ontology.load("4") 
 
@@ -528,13 +544,14 @@ class BlockCellLineNonCellLineKey_Stage:
     def run(self, text_mining_graph):
         #print("Checking cell line terms for proper context...")
         kv_nodes_cellline_val = deque()
+        kv_nodes_cellline_val_high_prior = deque()
         for kv_node in text_mining_graph.key_val_nodes:
             # Find children of the key that indicate they encode a cell-line value 
             key_term_nodes = set()
             for edge in text_mining_graph.forward_edges[kv_node]:
                 if isinstance(edge, DerivesInto) and edge.derivation_type == "key":
                     for t_node in text_mining_graph.forward_edges[kv_node][edge]:
-                        key_term_nodes.update( 
+                        key_term_nodes.update(
                             text_mining_graph.downstream_nodes(t_node)
                         )
 
@@ -553,7 +570,24 @@ class BlockCellLineNonCellLineKey_Stage:
             if len(key_term_nodes) > 0:
                 kv_nodes_cellline_val.append(kv_node)
 
-    
+            key_term_nodes_high_prior = [
+                x for x in key_term_nodes
+                if (
+                    isinstance(x, OntologyTermNode)
+                    and x.term_id not in self.cell_line_keys_low_prior
+                )
+                or (
+                    isinstance(x, CustomMappingTargetNode)
+                    and x.rep_str not in self.cell_line_phrases_low_prior
+                )
+            ]
+
+            if len(key_term_nodes_high_prior) > 0:
+                kv_nodes_cellline_val_high_prior.append(kv_node)
+
+        if len(kv_nodes_cellline_val_high_prior) != 0:
+            kv_nodes_cellline_val = kv_nodes_cellline_val_high_prior
+
         remove_nodes = deque()
         for kv_node in text_mining_graph.key_val_nodes:
             if kv_node in kv_nodes_cellline_val:
