@@ -24,6 +24,9 @@ def main():
                       dest="input_filename")
     parser.add_option("-o", "--output", help="Output filename",
                       dest="output_filename", type="str", default="")
+    parser.add_option("-k", "--keywords",
+                      help="specified mapping keywords json",
+                      dest="keywords_filename", type="str", default="")
     parser.add_option("-n", "--processes", help="# of processes",
                       dest="processes", type="int", default=1)
     parser.add_option("-d", "--debug", help="debug mode",
@@ -34,6 +37,7 @@ def main():
     output_f   = options.output_filename
     processes  = options.processes
     debug_mode = options.dbg
+    keywords_f = options.keywords_filename
 
     # Map key-value pairs to ontologies
     with open(input_f, "r", encoding="utf-8") as f:
@@ -63,6 +67,11 @@ def main():
     #     "CVCL":"4"}
     # ont_id_to_og = {x:load_ontology.load(x)[0] for x in list(ont_name_to_ont_id.values())}
     # pipeline = p_48()
+
+    # TWO_CHAR_MAPPINGS_JSON = "/mnt/c/Users/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/two_char_mappings.json"
+    if keywords_f != "":
+        with open(keywords_f, "r") as f:
+            pipeline.stages[14].str_to_mappings = json.load(f)
 
     all_mappings = []
     ct = datetime.datetime.now()
