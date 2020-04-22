@@ -24,22 +24,22 @@ def p_48():
     ngram = pc.NGram_Stage()
     lower_stage = pc.Lowercase_Stage()
     man_at_syn = pc.ManuallyAnnotatedSynonyms_Stage()
-    infer_cell_line = pc.InferCellLineTerms_Stage()
+    #infer_cell_line = pc.InferCellLineTerms_Stage()
     prop_spec_syn = pc.PropertySpecificSynonym_Stage()
-    infer_dev_stage = pc.ImpliedDevelopmentalStageFromAge_Stage()
+    #infer_dev_stage = pc.ImpliedDevelopmentalStageFromAge_Stage()
     linked_super = pc.LinkedTermsOfSuperterms_Stage()
-    cell_culture = pc.ConsequentCulturedCell_Stage()
+    #cell_culture = pc.ConsequentCulturedCell_Stage()
     filt_match_priority = pc.FilterOntologyMatchesByPriority_Stage()
     real_val = pc.ExtractRealValue_Stage()
     match_cust_targs = pc.ExactMatchCustomTargets_Stage()
-    cust_conseq = pc.CustomConsequentTerms_Stage()
+    #cust_conseq = pc.CustomConsequentTerms_Stage()
     delimit_plus = pc.Delimit_Stage('+')
     delimit_underscore = pc.Delimit_Stage('_')
     delimit_dash = pc.Delimit_Stage('-')
     delimit_slash = pc.Delimit_Stage('/')
     block_cell_line_key = pc.BlockCellLineNonCellLineKey_Stage()
     subphrase_linked = pc.RemoveSubIntervalOfMatchedBlockAncestralLink_Stage()
-    cellline_to_implied_disease = pc.CellLineToImpliedDisease_Stage()
+    #cellline_to_implied_disease = pc.CellLineToImpliedDisease_Stage()
     acr_to_expan = pc.AcronymToExpansion_Stage()
     # exact_match = pc.ExactStringMatching_Stage(["1", "2", "4", "5", "7", "8", "9"], query_len_thresh=3)
     exact_match = pc.ExactStringMatching_Stage(["1", "2", "4", "5", "7", "8", "9", "19"], query_len_thresh=3)
@@ -67,15 +67,16 @@ def p_48():
         fuzzy_match,
         match_cust_targs,
         block_cell_line_key,
-        linked_super,
-        cellline_to_implied_disease,
+        #linked_super,
+        #cellline_to_implied_disease,
         subphrase_linked,
-        cust_conseq,
+        #cust_conseq,
         real_val,
-        filt_match_priority,
-        infer_cell_line,
-        infer_dev_stage,
-        cell_culture]
+        filt_match_priority #,
+        #infer_cell_line,
+        #infer_dev_stage,
+        #cell_culture
+    ]
     # return pc.Pipeline(stages, defaultdict(lambda: 1.0))
     return pc.Pipeline(stages, defaultdict(dd_init))
 
