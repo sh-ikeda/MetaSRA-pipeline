@@ -228,6 +228,8 @@ def build_ontology(ont_to_loc, restrict_to_idspaces=None,
         for root_id in restrict_to_roots:
             keep_ids.update(og.recursive_subterms(root_id))
 
+        keep_ids = [x for x in keep_ids if x.split(":")[0] in restrict_to_idspaces]
+
         # Build the ontology-graph object
         id_to_term = {}
         for t_id in keep_ids:
@@ -433,8 +435,8 @@ def parse_entity(lines, restrict_to_idspaces):
         relationships = {}
         # 'is_a' relationship
         is_a = [x.split("!")[0].split()[0].strip() for x in attrs["is_a"]] if "is_a" in attrs else set()
-        if restrict_to_idspaces:
-            is_a = [x for x in is_a if x.split(":")[0] in restrict_to_idspaces]
+        # if restrict_to_idspaces:
+        #     is_a = [x for x in is_a if x.split(":")[0] in restrict_to_idspaces]
         if len(is_a) > 0: # Always add 'is_a' relationship
             relationships["is_a"] = []
             for is_a_t in is_a:
@@ -546,9 +548,8 @@ def parse_entity(lines, restrict_to_idspaces):
 
     if lines[0].strip() == "[Term]":
         attrs = parse_term_attrs(lines)
-
-        if not is_include_term(attrs):
-            return (ENTITY_EXCLUDED_TERM, None)
+        # if not is_include_term(attrs):
+        #     return (ENTITY_EXCLUDED_TERM, None)
 
         if not is_valid_term(attrs):
             return ("ERROR PARSING ENTITY", None)
