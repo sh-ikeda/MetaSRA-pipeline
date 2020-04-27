@@ -597,7 +597,8 @@ class BlockCellLineNonCellLineKey_Stage:
             # contain a cell-line value. Remove them if they represent a cell 
             # line.
             for edge in text_mining_graph.forward_edges[kv_node]:
-                if isinstance(edge, DerivesInto) and edge.derivation_type == "val":
+                # if isinstance(edge, DerivesInto) and edge.derivation_type == "val":
+                if isinstance(edge, DerivesInto):
                     for t_node in text_mining_graph.forward_edges[kv_node][edge]:
                         for down_node in text_mining_graph.downstream_nodes(t_node):
                             if isinstance(down_node, OntologyTermNode):
