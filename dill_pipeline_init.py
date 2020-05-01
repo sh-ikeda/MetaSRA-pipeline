@@ -42,7 +42,7 @@ def p_48():
     #cellline_to_implied_disease = pc.CellLineToImpliedDisease_Stage()
     acr_to_expan = pc.AcronymToExpansion_Stage()
     # exact_match = pc.ExactStringMatching_Stage(["1", "2", "4", "5", "7", "8", "9"], query_len_thresh=3)
-    exact_match = pc.ExactStringMatching_Stage(["1", "2", "4", "5", "7", "8", "9", "19"], query_len_thresh=3)
+    exact_match = pc.ExactStringMatching_Stage(["1", "2", "4", "5", "7", "9", "19"], query_len_thresh=3)
     fuzzy_match = pc.FuzzyStringMatching_Stage(0.1, query_len_thresh=3)
     two_char_match = pc.TwoCharMappings_Stage()
     time_unit = pc.ParseTimeWithUnit_Stage()
