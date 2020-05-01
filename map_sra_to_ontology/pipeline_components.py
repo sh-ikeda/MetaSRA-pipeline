@@ -589,6 +589,7 @@ class BlockCellLineNonCellLineKey_Stage:
             kv_nodes_cellline_val = kv_nodes_cellline_val_high_prior
 
         remove_nodes = deque()
+        remove_edges = deque()
         for kv_node in text_mining_graph.key_val_nodes:
             if kv_node in kv_nodes_cellline_val:
                 continue
@@ -618,10 +619,16 @@ class BlockCellLineNonCellLineKey_Stage:
 
                                     if not path_from_cell_line_key: 
                                         remove_nodes.append(down_node)
-
+                                    else:
+                                        for edge in text_mining_graph.reverse_edges[down_node]:
+                                            for token_node in text_mining_graph.reverse_edges[down_node][edge]:
+                                                if token_node in text_mining_graph.downstream_nodes(t_node):
+                                                    remove_edges.append((token_node, down_node, edge))
         for remove_node in remove_nodes:
             text_mining_graph.delete_node(remove_node)
 
+        for e in remove_edges:
+            text_mining_graph.delete_edge(e[0], e[1], e[2])
         return text_mining_graph
 
 
