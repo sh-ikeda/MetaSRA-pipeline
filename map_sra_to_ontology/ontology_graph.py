@@ -221,33 +221,39 @@ def build_ontology(ont_to_loc, restrict_to_idspaces=None,
                 if x.syn_str not in exclude_syns
             ]
 
-    if restrict_to_roots:
-        keep_ids = set() # The IDs that we will keep  
+    keep_ids = set() # The IDs that we will keep  
  
-        # Get the subterms of terms that we want to keep
+    # Get the subterms of terms that we want to keep
+    if restrict_to_roots:
         for root_id in restrict_to_roots:
             keep_ids.update(og.recursive_subterms(root_id))
+    else:
+        keep_ids = og.id_to_term.keys()
 
-        keep_ids = [x for x in keep_ids if x.split(":")[0] in restrict_to_idspaces]
+    keep_ids = [x for x in keep_ids if x.split(":")[0] in restrict_to_idspaces]
+    # with open("debug.txt", mode='w') as f:
+    #     for t in keep_ids:
+    #         f.write(t)
+    #         f.write("\n")
 
-        # Build the ontology-graph object
-        id_to_term = {}
-        for t_id in keep_ids:
-            t_name = og.id_to_term[t_id].name
-            id_to_term[t_id] =  og.id_to_term[t_id]
+    # Build the ontology-graph object
+    id_to_term = {}
+    for t_id in keep_ids:
+        t_name = og.id_to_term[t_id].name
+        id_to_term[t_id] =  og.id_to_term[t_id]
 
-            # Update the relationships between terms to remove dangling edges
-            for rel, rel_ids in og.id_to_term[t_id].relationships.items():
-                og.id_to_term[t_id].relationships[rel] = [
-                    x 
-                    for x in rel_ids 
-                    if x in keep_ids
-                ]
+        # Update the relationships between terms to remove dangling edges
+        for rel, rel_ids in og.id_to_term[t_id].relationships.items():
+            og.id_to_term[t_id].relationships[rel] = [
+                x 
+                for x in rel_ids 
+                if x in keep_ids
+            ]
 
         #return OntologyGraph(id_to_term) 
-        return MappableOntologyGraph(id_to_term, exclude_terms)   
-    else:
-        return MappableOntologyGraph(og.id_to_term, exclude_terms)       
+    return MappableOntologyGraph(id_to_term, exclude_terms)   
+    # else:
+    #     return MappableOntologyGraph(og.id_to_term, exclude_terms)       
 
 
 def most_specific_terms(term_ids, og, sup_relations=["is_a"]):

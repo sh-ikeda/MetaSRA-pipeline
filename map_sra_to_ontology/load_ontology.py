@@ -31,10 +31,14 @@ def load(ontology_index):
     return og, include_ontologies, restrict_to_roots
 
 def main():
-    og, i, r = load("4")
-    print(og.id_to_term["CVCL:C792"])
+    # og, i, r = load("4")
+    # print(og.id_to_term["CVCL:C792"])
     # og, i, r = load("19")
     # print(og.id_to_term["Orphanet:95"])
+    # og, i, r = load("16")
+    # print(og.id_to_term["EFO:0000572"])
+    og, i, r = load("12")
+    print(og.id_to_term["NCBITaxon:9606"])
 
 if __name__ == "__main__":
     main()
