@@ -51,21 +51,28 @@ TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score
 VERBOSE = False
 
 class MappedTerm:
-    def __init__(self, term_id, consequent, orig_key, orig_val, mapping_path):
+    def __init__(self, term_id, consequent, orig_key, orig_val, mapping_path, full_length, exact_match, match_target):
         self.term_id = term_id
         self.orig_key = orig_key
         self.orig_val = orig_val
         #self.match_score = match_score
-        self.mapping_path = mapping_path   
+        self.mapping_path = mapping_path
         self.consequent = consequent
+        self.full_length = full_length
+        self.exact_match = exact_match
+        self.match_target = match_target
 
     def to_dict(self):
         path = str(self.mapping_path)
-        return {"term_id": self.term_id, 
-            "original_key":self.orig_key,
-            "original_value": self.orig_val,
-            "consequent": self.consequent,
-            "path_to_mapping": path}
+        return {"term_id": self.term_id,
+                "original_key": self.orig_key,
+                "original_value": self.orig_val,
+                "consequent": self.consequent,
+                "path_to_mapping": path,
+                "full_length_match": self.full_length,
+                "exact_match": self.exact_match,
+                "match_target": self.match_target
+        }
       
     def __str__(self):
         return str(self.to_dict())  
@@ -209,12 +216,26 @@ class Pipeline:
             # Extract path from key-value to node TODO This might not work for all matches
             path = []
             c_node = orig_kv_node
+            is_full_length_match = True
+            is_exact_match = True
+            match_target = ""
+            origin_gram_pos = (-1, -1)
             while c_node != mapped_node:
                 path.append((
                     c_node, 
                     prev[c_node][1], 
                     prev[c_node][0]
                 ))
+                if isinstance(prev[c_node][0], TokenNode):
+                    if origin_gram_pos == (-1, -1):
+                        origin_gram_pos = (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end)
+                    else:
+                        if origin_gram_pos != (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end):
+                            is_full_length_match = False
+                if isinstance(prev[c_node][1], FuzzyStringMatch):
+                    if prev[c_node][1].edit_dist != 0:
+                        is_exact_match = False
+                    match_target = prev[c_node][1].match_target
                 c_node = prev[c_node][0]
         
             if VERBOSE: 
@@ -227,7 +248,7 @@ class Pipeline:
                 except:
                     pass
 
-            return path[0][0].key, path[0][0].value, path
+            return path[0][0].key, path[0][0].value, path, is_full_length_match, is_exact_match, match_target
 
         def is_consequent(mapped_node):
             consequent_edges = set([
@@ -262,7 +283,10 @@ class Pipeline:
                         consequent, 
                         r[0], 
                         r[1], 
-                        r[2]
+                        r[2],
+                        r[3],
+                        r[4],
+                        r[5]
                     )
                 )
         
