@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
 import re
+import sys
 from optparse import OptionParser
 from queue import Queue
 try:
     import pygraphviz as pgv
 except:
-    print("Unable to import pygraphviz. Visualization is disabled.")
+    print("Unable to import pygraphviz. Visualization is disabled.", file=sys.stderr)
 from map_sra_to_ontology import config
 
 import pkg_resources as pr
@@ -388,7 +389,7 @@ def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False):
         
 
     header_info = {}
-    print("Loading ontology from %s ..." % obo_file)
+    print("Loading ontology from %s ..." % obo_file, file=sys.stderr)
     name_to_ids = {}
     id_to_term = {}
     with open(obo_file, 'r') as f:
@@ -476,7 +477,7 @@ def parse_entity(lines, restrict_to_idspaces):
                     #syn_type = syn.split('"')[2].strip().split()[0]
                     syn_type = re.split(r'[^\\]?"', syn)[2].strip().split()[0]
                 except:
-                    print(("error:", syn))
+                    print(("error:", syn), file=sys.stderr)
                 parsed_syn = m.group(0)[1:-1].strip()
                 synonyms.add(Synonym(parsed_syn, syn_type))
         return synonyms
