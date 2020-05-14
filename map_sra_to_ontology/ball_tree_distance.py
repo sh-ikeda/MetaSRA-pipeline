@@ -55,4 +55,4 @@ def bag_dist(vec_a,vec_b):
         return b_minus_a
     #return max([a_minus_b, b_minus_a])
 
-print(bag_dist_multiset("aaab", "aabcc"))
+# print(bag_dist_multiset("aaab", "aabcc"))
