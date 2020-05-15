@@ -67,7 +67,7 @@ def p_48():
         fuzzy_match,
         match_cust_targs,
         block_cell_line_key,
-        #linked_super,
+        linked_super,
         #cellline_to_implied_disease,
         subphrase_linked,
         #cust_conseq,
