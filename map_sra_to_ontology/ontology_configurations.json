@@ -380,8 +380,17 @@
         "exclude_terms": {
         },
         "description": "All terms in the ORDO"
+    },
+    "20": {
+        "included_ontology_projects": [
+            "PO"
+        ],
+        "restrict_to_specific_subgraph": false,
+        "id_spaces": [
+            "PO"
+        ],
+        "exclude_terms": {
+        },
+        "description": "All terms in the PO"
     }
 }
-    
-
-
