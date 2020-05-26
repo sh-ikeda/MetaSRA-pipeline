@@ -24,6 +24,9 @@ def main():
                       dest="input_filename")
     parser.add_option("-o", "--output", help="Output filename",
                       dest="output_filename", type="str", default="")
+    parser.add_option("-i", "--init", help="init dill file",
+                      dest="init_dill",
+                      default=pr.resource_filename(__name__, "pipeline_init.dill"))
     parser.add_option("-k", "--keywords",
                       help="specified mapping keywords json",
                       dest="keywords_filename", type="str", default="")
@@ -35,6 +38,7 @@ def main():
 
     input_f    = options.input_filename
     output_f   = options.output_filename
+    init_dill  = options.init_dill
     processes  = options.processes
     debug_mode = options.dbg
     keywords_f = options.keywords_filename
@@ -55,10 +59,8 @@ def main():
 
     # Load ontologies
     ct = datetime.datetime.now()
-    sys.stderr.write('[{}] Loading ontologies\n'.format(ct))
-    ontologies_dill = pr.resource_filename(__name__, "pipeline_init.dill")
-
-    dill.load_session(ontologies_dill)
+    sys.stderr.write('[{}] Initializing pipeline.\n'.format(ct))
+    dill.load_session(init_dill)
     # ont_name_to_ont_id = {
     #     "UBERON":"12",
     #     "CL":"1",
