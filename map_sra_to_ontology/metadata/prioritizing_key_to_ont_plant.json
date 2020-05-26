@@ -1,0 +1,10 @@
+{
+    "tissue": {
+        "ontology": "PO",
+        "namespace": "plant_anatomy"
+    },
+    "organism part": {
+        "ontology": "PO",
+        "namespace": "plant_anatomy"
+    }
+}

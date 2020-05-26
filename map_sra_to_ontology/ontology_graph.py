@@ -38,7 +38,7 @@ class Synonym:
 class Term:
     def __init__(self, id, name, definition=None, 
         synonyms=[], comment=None, xrefs=None, 
-        relationships={}, property_values=[], subsets=[]):
+        relationships={}, property_values=[], subsets=[], namespace=None):
         """
         Args:
             id: term identifier (e.g. 'CL:0000555')
@@ -62,6 +62,7 @@ class Term:
         self.relationships = relationships
         self.property_values = property_values
         self.subsets = subsets
+        self.namespace = namespace
 
     def __repr__(self):
         rep = {
@@ -520,6 +521,9 @@ def parse_entity(lines, restrict_to_idspaces):
             xrefs = extract_xrefs(attrs["xref"])
         return xrefs
 
+    def parse_namespace(attrs):
+        return attrs["namespace"][0] if "namespace" in list(attrs.keys()) else None
+
     def extract_property_values(raw_prop_vals):
         prop_vals = set()
         for prop_val in raw_prop_vals:
@@ -569,12 +573,13 @@ def parse_entity(lines, restrict_to_idspaces):
         relationships = parse_relationships(attrs)
         property_values = parse_property_values(attrs)    
         subsets = parse_subsets(attrs) 
+        namespace = parse_namespace(attrs)
 
         # Build term
         term = Term(attrs["id"][0], attrs["name"][0].strip(), 
             definition=definition, synonyms=set(synonyms), xrefs=xrefs, 
             relationships=relationships, property_values=property_values, 
-            comment=comment, subsets=subsets)
+            comment=comment, subsets=subsets, namespace=namespace)
  
         return (ENTITY_TERM, term, is_obsolete)        
 

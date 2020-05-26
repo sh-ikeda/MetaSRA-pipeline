@@ -131,6 +131,14 @@ class Pipeline:
             kv_node = KeyValueNode(tag, val)
             tm_graph.add_node(kv_node)
 
+        is_first = True
+        for stage in self.stages:
+            if isinstance(stage, PrioritizeSpecificMatching_Stage):
+                is_first = False
+        if is_first:
+            prior_spec_match = PrioritizeSpecificMatching_Stage("/home/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/prioritizing_key_to_ont_plant.json", ["20"])
+            self.stages.append(prior_spec_match)
+
         # Process stages of pipeline
         for stage in self.stages:
             if isinstance(stage, FuzzyStringMatching_Stage):
@@ -967,13 +975,16 @@ class FuzzyStringMatching_Stage:
     Use a pre-constructed BK-tree to perform fuzzy matching
     for all artifacts against the ontologies.
     """
-    def __init__(self, thresh, query_len_thresh=None, match_numeric=False):
+    def __init__(self, thresh,
+                 query_len_thresh=None, match_numeric=False,
+                 index_json="fuzzy_match_string_data.json",
+                 index_pickle="fuzzy_match_bk_tree.pickle"):
        
-        fname = pr.resource_filename(resource_package, join("fuzzy_matching_index", "fuzzy_match_string_data.json"))
+        fname = pr.resource_filename(resource_package, join("fuzzy_matching_index", index_json))
         with open(fname, "r") as f:
             self.str_to_terms = json.load(f)
 
-        fname = pr.resource_filename(resource_package, join("fuzzy_matching_index", "fuzzy_match_bk_tree.pickle"))
+        fname = pr.resource_filename(resource_package, join("fuzzy_matching_index", index_pickle))
         # with open(fname, "r") as f:
         with open(fname, "rb") as f:
             self.bk_tree = pickle.load(f)
@@ -1133,6 +1144,74 @@ class TermArtifactCombinations_Stage:
             text_mining_graph.add_edge(e[0], e[1], e[2])
         return text_mining_graph            
 
+
+class PrioritizeSpecificMatching_Stage:
+    """
+    If a sample has a specific key and it is mapped to a term of
+    a specific ontology, mapping to the ontology from other key-values
+    are removed. For example, If a sample has a "tissue" attribute
+    and its value is mapped to an UBERON term, mapping to UBERON
+    term from other key-values are removed.
+    """
+    def __init__(self, key_to_ont_json, ont_ids):
+        with open(key_to_ont_json, 'r') as f:
+            self.key_to_ont = json.load(f)
+        self.ogs = []
+        for ont_id in ont_ids:
+            og, x, y = load_ontology.load(ont_id)
+            self.ogs.append(og)
+
+    def run(self, text_mining_graph):
+        to_prioritize = {}
+        keep_nodes = set()
+        for kv_node in text_mining_graph.key_val_nodes:
+            if kv_node.key not in self.key_to_ont.keys():
+                continue
+            for edge in text_mining_graph.forward_edges[kv_node]:
+                tobreak = False
+                if isinstance(edge, DerivesInto) and edge.derivation_type == "val":
+                    for t_node in text_mining_graph.forward_edges[kv_node][edge]:
+                        for down_node in text_mining_graph.downstream_nodes(t_node):
+                            if isinstance(down_node, OntologyTermNode):
+                                # MappingTargetNode?
+                                if down_node.namespace() == self.key_to_ont[kv_node.key]["ontology"]:
+                                    tobreak = True
+                                    dic = self.key_to_ont[kv_node.key]
+                                    if "namespace" in dic:
+                                        for og in self.ogs:
+                                            if down_node.term_id in og.id_to_term:
+                                                if og.id_to_term[down_node.term_id].namespace == dic["namespace"]:
+                                                    to_prioritize[kv_node.key] = dic
+                                                    keep_nodes.add(down_node)
+                                    else:
+                                        to_prioritize[kv_node.key] = dic
+                                        keep_nodes.add(down_node)
+                if tobreak:
+                    break
+
+        remove_nodes = set()
+        for kv_node in text_mining_graph.key_val_nodes:
+            if kv_node.key in to_prioritize.keys():
+                continue
+            for edge in text_mining_graph.forward_edges[kv_node]:
+                if isinstance(edge, DerivesInto) and edge.derivation_type == "val":
+                    for t_node in text_mining_graph.forward_edges[kv_node][edge]:
+                        for down_node in text_mining_graph.downstream_nodes(t_node):
+                            if isinstance(down_node, OntologyTermNode):
+                                for dic in to_prioritize.values():
+                                    if dic["ontology"] == down_node.namespace():
+                                        if "namespace" in dic:
+                                            for og in self.ogs:
+                                                if down_node.term_id in og.id_to_term:
+                                                    if og.id_to_term[down_node.term_id].namespace == dic["namespace"]:
+                                                        remove_nodes.add(down_node)
+                                        else:
+                                            remove_nodes.add(down_node)
+
+        for node in remove_nodes:
+            if node not in keep_nodes:
+                text_mining_graph.delete_node(node)
+        return text_mining_graph
 
 class RemoveSubIntervalOfMatchedBlockAncestralLink_Stage:
     def run(self, text_mining_graph):

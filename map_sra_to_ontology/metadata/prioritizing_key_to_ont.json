@@ -1,0 +1,8 @@
+{
+    "tissue": {
+        "ontology": "UBERON"
+    },
+    "cell type": {
+        "ontology": "CL"
+    }
+}
