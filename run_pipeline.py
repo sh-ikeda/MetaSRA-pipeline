@@ -111,12 +111,12 @@ def main():
                                                 mappings))
 
     sys.stderr.write('[{}] Writing.\n'.format(ct))
-    output_json = json.dumps(outputs, indent=4, separators=(',', ': '))
-    if output_f != "":
+    if output_f.split(".")[-1] == "json":
+        output_json = json.dumps(outputs, indent=4, separators=(',', ': '))
         with open(output_f, mode='w') as f:
             f.write(output_json)
     else:
-        print(output_json)
+        print_as_tsv(outputs, tag_to_vals, output_f)
     sys.stderr.write('[{}] Done.\n'.format(ct))
 
 
@@ -125,15 +125,16 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
     real_val_props = []
     mapped_terms_details = []
     # remove "cell line", "disease", "treatment"
-    exception_term_ids = ["EFO:0000322",
+    excluding_term_ids = ["EFO:0000322",
                           "DOID:4",
                           "EFO:0000727",
                           "EFO:0000408",
                           "Orphanet:377788"]
+
     for mapped_term_data in mapping_data["mapped_terms"]:
         term_id = mapped_term_data["term_id"]
         for ont in list(ont_id_to_og.values()):
-            if term_id in ont.get_mappable_term_ids() and term_id not in exception_term_ids:
+            if term_id in ont.get_mappable_term_ids() and term_id not in excluding_term_ids:
                 mapped_terms.append(term_id)
                 mapped_term_detail = mapped_term_data.copy()
                 mapped_term_detail["term_name"] = ont.id_to_term[term_id].name
@@ -167,6 +168,46 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
         mapping_data["accession"] = accession
 
     return mapping_data
+
+
+def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
+    acc_to_kvs = {}
+    lines = ""
+    for tag_to_val in tag_to_vals:
+        acc_to_kvs[tag_to_val["accession"]] = tag_to_val
+
+    for sample in mappings:
+        mapped_keys = set()
+        for mot in sample["mapped ontology terms"]:
+            line = sample["accession"]
+            line += "\t" + mot["original_key"]
+            line += "\t" + mot["original_value"]
+            line += "\t" + mot["term_id"]
+            line += "\t" + mot["term_name"]
+            line += "\t" + str(mot["consequent"])
+            line += "\t" + str(mot["full_length_match"])
+            line += "\t" + str(mot["exact_match"])
+            line += "\t" + str(mot["match_target"])
+            if lines != "":
+                lines += "\n"
+            lines += line
+            mapped_keys.add(mot["original_key"])
+        for key in acc_to_kvs[sample["accession"]]:
+            if key == "accession":
+                continue
+            if key not in mapped_keys:
+                line = sample["accession"]
+                line += "\t" + key + "\t" + acc_to_kvs[sample["accession"]][key]
+                if lines != "":
+                    lines += "\n"
+                lines += line
+
+    if output_f == "":
+        print(lines)
+    else:
+        with open(output_f, mode='w') as f:
+            f.write(lines)
+    return
 
 
 if __name__ == "__main__":
