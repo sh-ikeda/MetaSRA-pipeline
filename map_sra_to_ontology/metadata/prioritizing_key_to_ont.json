@@ -1,6 +1,10 @@
 {
     "tissue": {
-        "ontology": "UBERON"
+        "ontology": "UBERON",
+        "exceptions": [
+            "UBERON:0003100",
+            "UBERON:0003101"
+        ]
     },
     "cell type": {
         "ontology": "CL"

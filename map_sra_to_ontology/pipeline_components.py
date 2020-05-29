@@ -136,7 +136,8 @@ class Pipeline:
             if isinstance(stage, PrioritizeSpecificMatching_Stage):
                 is_first = False
         if is_first:
-            prior_spec_match = PrioritizeSpecificMatching_Stage("/home/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/prioritizing_key_to_ont_plant.json", ["20"])
+            # prior_spec_match = PrioritizeSpecificMatching_Stage("/home/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/prioritizing_key_to_ont_plant.json", ["20"])
+            prior_spec_match = PrioritizeSpecificMatching_Stage("/home/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/prioritizing_key_to_ont.json", [])
             self.stages.append(prior_spec_match)
 
         # Process stages of pipeline
@@ -1199,6 +1200,8 @@ class PrioritizeSpecificMatching_Stage:
                         for down_node in text_mining_graph.downstream_nodes(t_node):
                             if isinstance(down_node, OntologyTermNode):
                                 for dic in to_prioritize.values():
+                                    if down_node.term_id in dic["exceptions"]:
+                                        continue
                                     if dic["ontology"] == down_node.namespace():
                                         if "namespace" in dic:
                                             for og in self.ogs:
