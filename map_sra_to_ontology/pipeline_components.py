@@ -47,6 +47,7 @@ TWO_CHAR_MAPPINGS_JSON = pr.resource_filename(resource_package, join("metadata",
 TERM_ARTIFACT_COMBOS_JSON = pr.resource_filename(resource_package, join("metadata", "term_artifact_combo.json"))
 PRIOR_KEY_TO_ONT_JSON = pr.resource_filename(resource_package, join("metadata", "prioritizing_key_to_ont.json"))
 # PRIOR_KEY_TO_ONT_JSON = pr.resource_filename(resource_package, join("metadata", "prioritizing_key_to_ont_plant.json"))
+CVCL_TO_CELLLINE_JSON = pr.resource_filename(resource_package, join("metadata", "cvcl_term_to_other_cellline_terms.json"))
 
 TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score dictionary
 
@@ -574,7 +575,7 @@ class BlockCellLineNonCellLineKey_Stage:
         # Cell line terms are all CVCL terms and those terms in the EFO 
         # they link to
         self.cell_line_terms = set(cvcl_og.id_to_term.keys())
-        with open(TERM_TO_LINKED_ANCESTOR_JSON, 'r') as f:
+        with open(CVCL_TO_CELLLINE_JSON, 'r') as f:
             term_to_suplinked = json.load(f)
             for t_id in cvcl_og.id_to_term:
                 if t_id in term_to_suplinked:
