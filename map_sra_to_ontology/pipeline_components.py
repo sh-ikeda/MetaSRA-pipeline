@@ -45,6 +45,8 @@ CUST_TERM_TO_CONSEQ_TERMS_JSON = pr.resource_filename(resource_package, join("me
 CELL_LINE_TERMS_JSON = pr.resource_filename(resource_package, join("metadata", "cvcl_mappings.json"))
 TWO_CHAR_MAPPINGS_JSON = pr.resource_filename(resource_package, join("metadata", "twochar_or_numeric_cellline.json"))
 TERM_ARTIFACT_COMBOS_JSON = pr.resource_filename(resource_package, join("metadata", "term_artifact_combo.json"))
+PRIOR_KEY_TO_ONT_JSON = pr.resource_filename(resource_package, join("metadata", "prioritizing_key_to_ont.json"))
+# PRIOR_KEY_TO_ONT_JSON = pr.resource_filename(resource_package, join("metadata", "prioritizing_key_to_ont_plant.json"))
 
 TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score dictionary
 
@@ -136,8 +138,8 @@ class Pipeline:
             if isinstance(stage, PrioritizeSpecificMatching_Stage):
                 is_first = False
         if is_first:
-            # prior_spec_match = PrioritizeSpecificMatching_Stage("/home/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/prioritizing_key_to_ont_plant.json", ["20"])
-            prior_spec_match = PrioritizeSpecificMatching_Stage("/home/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/prioritizing_key_to_ont.json", [])
+            # prior_spec_match = PrioritizeSpecificMatching_Stage(PRIOR_KEY_TO_ONT_JSON, ["20"])
+            prior_spec_match = PrioritizeSpecificMatching_Stage(PRIOR_KEY_TO_ONT_JSON, [])
             self.stages.append(prior_spec_match)
 
         # Process stages of pipeline
@@ -1200,7 +1202,7 @@ class PrioritizeSpecificMatching_Stage:
                         for down_node in text_mining_graph.downstream_nodes(t_node):
                             if isinstance(down_node, OntologyTermNode):
                                 for dic in to_prioritize.values():
-                                    if down_node.term_id in dic["exceptions"]:
+                                    if down_node.term_id in dic.get("exceptions", {}):
                                         continue
                                     if dic["ontology"] == down_node.namespace():
                                         if "namespace" in dic:
