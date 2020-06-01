@@ -220,46 +220,48 @@ class Pipeline:
                 return None
 
             # Find the minimum weight path to a key-value
-            m = min(kv_node_w_dists, key=lambda x: x[1])
-            orig_kv_node = m[0]
-            path_weight = m[1]
+            # m = min(kv_node_w_dists, key=lambda x: x[1])
+            # orig_kv_node = m[0]
+            # path_weight = m[1]
 
             # Extract path from key-value to node TODO This might not work for all matches
-            path = []
-            c_node = orig_kv_node
-            is_full_length_match = True
-            is_exact_match = True
-            match_target = ""
-            origin_gram_pos = (-1, -1)
-            while c_node != mapped_node:
-                path.append((
-                    c_node, 
-                    prev[c_node][1], 
-                    prev[c_node][0]
-                ))
-                if isinstance(prev[c_node][0], TokenNode):
-                    if origin_gram_pos == (-1, -1):
-                        origin_gram_pos = (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end)
-                    else:
-                        if origin_gram_pos != (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end):
-                            is_full_length_match = False
-                if isinstance(prev[c_node][1], FuzzyStringMatch):
-                    if prev[c_node][1].edit_dist != 0:
-                        is_exact_match = False
-                    match_target = prev[c_node][1].match_target
-                c_node = prev[c_node][0]
-        
-            if VERBOSE: 
-                try:
-                    print("Path from ontology node '%s' to closest key-value %s is %s" % (
-                        str(mapped_node).encode('utf-8'), 
-                        str(orig_kv_node).encode('utf-8'), 
-                        str(path).encode('utf-8')
+            for kv_node_w_dist in kv_node_w_dists:
+                c_node = kv_node_w_dist[0]
+                path = []
+                is_full_length_match = True
+                is_exact_match = True
+                match_target = ""
+                origin_gram_pos = (-1, -1)
+                while c_node != mapped_node:
+                    path.append((
+                        c_node,
+                        prev[c_node][1],
+                        prev[c_node][0]
                     ))
-                except:
-                    pass
+                    if isinstance(prev[c_node][0], TokenNode):
+                        if origin_gram_pos == (-1, -1):
+                            origin_gram_pos = (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end)
+                        else:
+                            if origin_gram_pos != (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end):
+                                is_full_length_match = False
+                    if isinstance(prev[c_node][1], FuzzyStringMatch):
+                        if prev[c_node][1].edit_dist != 0:
+                            is_exact_match = False
+                        match_target = prev[c_node][1].match_target
+                    c_node = prev[c_node][0]
+                result.append((path[0][0].key, path[0][0].value, path, is_full_length_match, is_exact_match, match_target))
+        
+            # if VERBOSE:
+            #     try:
+            #         print("Path from ontology node '%s' to closest key-value %s is %s" % (
+            #             str(mapped_node).encode('utf-8'), 
+            #             str(orig_kv_node).encode('utf-8'), 
+            #             str(path).encode('utf-8')
+            #         ))
+            #     except:
+            #         pass
 
-            return path[0][0].key, path[0][0].value, path, is_full_length_match, is_exact_match, match_target
+            return result
 
         def is_consequent(mapped_node):
             consequent_edges = set([
@@ -285,8 +287,10 @@ class Pipeline:
             if x.term_id in exclude_ids
         ])
         for o_node in text_mining_graph.ontology_term_nodes:
-            r = extract_mapping(o_node)
-            if r:
+            result = extract_mapping(o_node)
+            if result is None:
+                continue
+            for r in result:
                 consequent = is_consequent(o_node)
                 mapped_terms.append(
                     MappedTerm(
