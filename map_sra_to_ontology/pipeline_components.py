@@ -308,8 +308,10 @@ class Pipeline:
         
         real_value_properties = []
         for rv_node in text_mining_graph.real_value_nodes:
-            r = extract_mapping(rv_node)
-            if r:
+            result = extract_mapping(rv_node)
+            if result is None:
+                continue
+            for r in result:
                 consequent = is_consequent(rv_node)
                 real_value_properties.append(
                     RealValueProperty(
