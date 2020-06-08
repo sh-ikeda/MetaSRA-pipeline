@@ -134,14 +134,18 @@ class Pipeline:
             kv_node = KeyValueNode(tag, val)
             tm_graph.add_node(kv_node)
 
-        is_first = True
-        for stage in self.stages:
-            if isinstance(stage, PrioritizeSpecificMatching_Stage):
-                is_first = False
-        if is_first:
-            # prior_spec_match = PrioritizeSpecificMatching_Stage(PRIOR_KEY_TO_ONT_JSON, ["20"])
-            prior_spec_match = PrioritizeSpecificMatching_Stage(PRIOR_KEY_TO_ONT_JSON, [])
-            self.stages.append(prior_spec_match)
+        # is_first = True
+        # for stage in self.stages:
+        #     if isinstance(stage, PrioritizeSpecificMatching_Stage):
+        #         is_first = False
+        # if is_first:
+        #     # prior_spec_match = PrioritizeSpecificMatching_Stage(PRIOR_KEY_TO_ONT_JSON, ["20"])
+        #     key_to_ont_json = join(os.path.dirname(os.path.abspath(__file__)), "metadata", "prioritizing_key_to_ont.json")
+        #     print(key_to_ont_json)
+        #     print(__file__)
+        #     print(__name__)
+        #     prior_spec_match = PrioritizeSpecificMatching_Stage(key_to_ont_json, [])
+        #     self.stages.append(prior_spec_match)
 
         # Process stages of pipeline
         for stage in self.stages:
@@ -561,7 +565,7 @@ class PropertySpecificSynonym_Stage:
 
 
 class BlockCellLineNonCellLineKey_Stage:
-    def __init__(self):
+    def __init__(self, cvcl_og):
         self.cell_line_keys = set([
             "EFO:0000322", 
             "EFO:0000324"
@@ -572,7 +576,7 @@ class BlockCellLineNonCellLineKey_Stage:
         self.cell_line_keys_low_prior = set([])
         self.cell_line_phrases_low_prior = set(["source name"])
 
-        cvcl_og, x,y = load_ontology.load("4") 
+        # cvcl_og, x,y = load_ontology.load("4") 
 
         # Cell line terms are all CVCL terms and those terms in the EFO 
         # they link to
@@ -887,7 +891,8 @@ class ExactStringMatching_Stage:
     """
     def __init__(
         self, 
-        target_og_ids, 
+        # target_og_ids, 
+        ontology_graphs,
         query_len_thresh=None, 
         match_numeric=False
     ):
@@ -901,10 +906,10 @@ class ExactStringMatching_Stage:
         self.terms_array = deque()
         curr_i = 0
 
-        ontology_graphs = [
-            load_ontology.load(x)[0] 
-            for x in target_og_ids
-        ]
+        # ontology_graphs = [
+        #     load_ontology.load(x)[0] 
+        #     for x in target_og_ids
+        # ]
         for og in ontology_graphs:
             for term in og.get_mappable_terms():
                 self.terms_array.append(term)
@@ -1163,13 +1168,15 @@ class PrioritizeSpecificMatching_Stage:
     and its value is mapped to an UBERON term, mapping to UBERON
     term from other key-values are removed.
     """
-    def __init__(self, key_to_ont_json, ont_ids):
+    def __init__(self, key_to_ont_json, ont_graphs):
+        if key_to_ont_json == "":
+            key_to_ont_json = PRIOR_KEY_TO_ONT_JSON
         with open(key_to_ont_json, 'r') as f:
             self.key_to_ont = json.load(f)
-        self.ogs = []
-        for ont_id in ont_ids:
-            og, x, y = load_ontology.load(ont_id)
-            self.ogs.append(og)
+        self.ogs = ont_graphs
+        # for ont_id in ont_ids:
+        #     og, x, y = load_ontology.load(ont_id)
+        #     self.ogs.append(og)
 
     def run(self, text_mining_graph):
         to_prioritize = {}
