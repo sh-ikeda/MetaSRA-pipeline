@@ -840,6 +840,7 @@ class FilterOntologyMatchesByPriority_Stage:
         def is_edge_direct_match(edge):
             return edge.match_target == "TERM_NAME" \
                 or edge.match_target == "EXACT_SYNONYM" \
+                or edge.match_target == "SYNONYM_EXACT" \
                 or edge.match_target == "ENRICHED_SYNONYM"
 
         # TODO I believe we need to check Exact matches as well as fuzzy matches? This needs to be debugged...
