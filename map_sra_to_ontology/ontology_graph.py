@@ -71,7 +71,9 @@ class Term:
             "definition":self.definition, 
             "synonyms": self.synonyms,  
             "relationships": self.relationships,
-            "subsets": self.subsets}
+            "subsets": self.subsets,
+            "xrefs": self.xrefs
+        }
         return str(rep)
 
     def is_a(self):

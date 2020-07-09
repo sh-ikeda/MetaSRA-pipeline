@@ -125,6 +125,7 @@ class Pipeline:
 
     def run(self, tag_to_val, covered_query_map):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
+        taxId = ""
                 
         # Create initial text-mining-graph
         for tag, val in tag_to_val.items():
@@ -132,6 +133,9 @@ class Pipeline:
             #     tag.encode('utf-8'),
             #     val.encode('utf-8')
             # )
+            if tag == "taxId":
+                taxId = val
+                continue
             kv_node = KeyValueNode(tag, val)
             tm_graph.add_node(kv_node)
 
@@ -152,6 +156,9 @@ class Pipeline:
         for stage in self.stages:
             if isinstance(stage, FuzzyStringMatching_Stage):
                 tm_graph, covered_query_map = stage.run(tm_graph, covered_query_map)
+            elif isinstance(stage, FilterMappingsToCellLinesByTaxId_Stage):
+                if taxId != "":
+                    tm_graph = stage.run(tm_graph, taxId)
             else:
                 tm_graph = stage.run(tm_graph)
             # if isinstance(stage, ExactStringMatching_Stage):
@@ -1774,6 +1781,25 @@ class InferCellLineTerms_Stage:
         for source_node, target_nodes in onode_to_edges.items():
             for target_node in target_nodes:
                 text_mining_graph.add_edge(source_node, target_node, edge)
+        return text_mining_graph
+
+
+class FilterMappingsToCellLinesByTaxId_Stage:
+    def __init__(self, cvcl_og):
+        self.cvcl_og = cvcl_og
+
+    def run(self, text_mining_graph, taxId):
+        remove_nodes = []
+        for o_node in text_mining_graph.ontology_term_nodes:
+            if o_node.namespace() == "CVCL":
+                for xref in self.cvcl_og.id_to_term[o_node.term_id].xrefs:
+                    if xref.split(":")[0] == "NCBI_TaxID":
+                        if xref.split(":")[1] != str(taxId):
+                            remove_nodes.append(o_node)
+
+        for d_node in remove_nodes:
+            text_mining_graph.delete_node(d_node)
+
         return text_mining_graph
 
 

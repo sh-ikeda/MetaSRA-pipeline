@@ -71,6 +71,8 @@ def p_48(ont_id_to_og):
     time_unit = pc.ParseTimeWithUnit_Stage()
     sys.stderr.write('[{}] prior_spec_match\n'.format(datetime.datetime.now()))
     prior_spec_match = pc.PrioritizeSpecificMatching_Stage("", [])
+    sys.stderr.write('[{}] taxid_filter\n'.format(datetime.datetime.now()))
+    taxid_filter = pc.FilterMappingsToCellLinesByTaxId_Stage(ont_id_to_og["4"])
 
     stages = [
         key_val_filt,
@@ -92,6 +94,7 @@ def p_48(ont_id_to_og):
         fuzzy_match,
         match_cust_targs,
         block_cell_line_key,
+        taxid_filter,
         linked_super,
         #cellline_to_implied_disease,
         subphrase_linked,

@@ -34,6 +34,8 @@ def main():
                       dest="processes", type="int", default=1)
     parser.add_option("-d", "--debug", help="debug mode",
                       dest="dbg", action="store_true")
+    parser.add_option("-t", "--test", help="test mode",
+                      dest="tst", action="store_true")
     (options, args) = parser.parse_args()
 
     input_f    = options.input_filename
@@ -42,6 +44,7 @@ def main():
     processes  = options.processes
     debug_mode = options.dbg
     keywords_f = options.keywords_filename
+    test_mode  = options.tst
 
     # Map key-value pairs to ontologies
     with open(input_f, "r", encoding="utf-8") as f:
@@ -50,12 +53,25 @@ def main():
     tag_to_vals = []
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] Parsing BioSample JSON\n'.format(ct))
-    for tag_to_val in biosample_json:
-        entry = {}
-        entry["accession"] = tag_to_val["accession"]
-        for k in tag_to_val["characteristics"]:
-            entry[k] = tag_to_val["characteristics"][k][0]["text"]
-        tag_to_vals.append(entry)
+    if test_mode:
+        for tag_to_val in biosample_json:
+            entry = {}
+            entry["accession"] = tag_to_val["sample_accession"]
+            for k in tag_to_val["attributes"]:
+                val = tag_to_val["attributes"][k]
+                if k != "accession" and len(val) < 100:
+                    entry[k] = val
+            tag_to_vals.append(entry)
+    else:
+        for tag_to_val in biosample_json:
+            entry = {}
+            entry["accession"] = tag_to_val["accession"]
+            entry["taxId"] = tag_to_val.get("taxId", "")
+            for k in tag_to_val["characteristics"]:
+                val = tag_to_val["characteristics"][k][0]["text"]
+                if k != "accession" and len(val) < 100 and k != "taxId":
+                    entry[k] = val
+            tag_to_vals.append(entry)
 
     # Load ontologies
     ct = datetime.datetime.now()
