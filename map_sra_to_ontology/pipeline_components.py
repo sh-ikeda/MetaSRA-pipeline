@@ -298,6 +298,8 @@ class Pipeline:
                 continue
             for r in result:
                 consequent = is_consequent(o_node)
+                if r[2][0][1].derivation_type == "key":
+                    continue
                 mapped_terms.append(
                     MappedTerm(
                         o_node.term_id, 
