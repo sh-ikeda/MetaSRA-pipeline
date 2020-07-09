@@ -409,6 +409,8 @@ class TwoCharMappings_Stage():
         #print("Matching specified two-character artifacts...")
         for t_node in text_mining_graph.token_nodes:
             if t_node.token_str in self.str_to_mappings:
+                if t_node.origin_gram_end-t_node.origin_gram_start!=2:
+                    continue
                 for t_id in self.str_to_mappings[t_node.token_str]:
                     match_node = OntologyTermNode(t_id) 
                     edge = FuzzyStringMatch(
