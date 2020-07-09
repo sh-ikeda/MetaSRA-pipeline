@@ -16,6 +16,7 @@ from nltk.metrics.distance import edit_distance
 import pkg_resources as pr
 import json
 import os
+import re
 from os.path import join
 
 # from . import load_ontology
@@ -1008,6 +1009,15 @@ class FuzzyStringMatching_Stage:
         self.thresh = thresh
         self.match_numeric = match_numeric
 
+    def is_word_lost(self, str1, str2, thresh):
+        words1 = re.split("[ \-_/]", str1)
+        words2 = re.split("[ \-_/]", str2)
+        is_lost = False
+        for w in words1:
+            if len(w) <= thresh and w not in words2:
+                is_lost = True
+                break
+        return is_lost
 
     def _edit_below_thresh(self, query):
 
@@ -1027,7 +1037,7 @@ class FuzzyStringMatching_Stage:
             dist = edit_distance(str1, str2)
             if dist > 2:
                 continue
-        
+
             if VERBOSE:
                 print("Retrieved '%s' from BK-tree. It has edit distance of %f" % (str2.encode('utf-8'), dist))
             len1 = len(str1)
@@ -1042,6 +1052,8 @@ class FuzzyStringMatching_Stage:
 
             norm_dist = float(dist)/float(max_len)
             if norm_dist <= self.thresh:
+                if self.is_word_lost(str1, str2, max_len*self.thresh):
+                    continue
                 for match_data in self.str_to_terms[str2]:
                     # First element of 'match_data' is term_id, second is match type
                     matched.append((str2, dist, match_data[0], match_data[1]))
