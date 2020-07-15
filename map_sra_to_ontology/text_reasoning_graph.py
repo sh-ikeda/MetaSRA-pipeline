@@ -6,11 +6,12 @@
 from optparse import OptionParser
 # from sets import Set
 from collections import defaultdict, deque
+import sys
 
 try:
     import pygraphviz as pgv
 except:
-    print("Unable to import pygraphviz. Visualization is disabled.")
+    print("Unable to import pygraphviz. Visualization is disabled.", file=sys.stderr)
 
 class EEdge(object):
     def __init__(self, weight):
