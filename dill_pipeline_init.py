@@ -73,6 +73,8 @@ def p_48(ont_id_to_og):
     prior_spec_match = pc.PrioritizeSpecificMatching_Stage("", [])
     sys.stderr.write('[{}] taxid_filter\n'.format(datetime.datetime.now()))
     taxid_filter = pc.FilterMappingsToCellLinesByTaxId_Stage(ont_id_to_og["4"])
+    sys.stderr.write('[{}] filter_ambiguous\n'.format(datetime.datetime.now()))
+    filter_ambiguous = pc.FilterMappingsFromAmbiguousAttributes_Stage()
 
     stages = [
         key_val_filt,
@@ -94,6 +96,7 @@ def p_48(ont_id_to_og):
         fuzzy_match,
         match_cust_targs,
         block_cell_line_key,
+        filter_ambiguous,
         taxid_filter,
         linked_super,
         #cellline_to_implied_disease,
