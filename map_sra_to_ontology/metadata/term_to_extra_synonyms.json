@@ -17981,6 +17981,8 @@
         "CD8+ t cells",
         "CD8+ t cell",
         "CD8+ T-cell"
+    ],
+    "CL:0002618": [
+        "HUVEC"
     ]
-    
 }

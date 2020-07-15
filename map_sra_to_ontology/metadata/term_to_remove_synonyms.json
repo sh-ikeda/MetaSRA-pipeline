@@ -938,5 +938,29 @@
         "exclude_synonyms": [
             "myeloid progenitor cell"
         ]
+    },
+    "CVCL:2959": {
+        "name": "HUVEC-C",
+        "exclude_synonyms": [
+            "HUVEC"
+        ]
+    },
+    "CVCL:2492": {
+        "name": "HL",
+        "exclude_synonyms": [
+            "Human Lung"
+        ]
+    },
+    "CVCL:M624": {
+        "name": "HEK",
+        "exclude_synonyms": [
+            "Human Embryonic Kidney"
+        ]
+    },
+    "EFO_UBERON:0006558": {
+        "name": "lymphatic part of lymphoid system",
+        "exclude_synonyms": [
+            "Lymph node"
+        ]
     }
 }
