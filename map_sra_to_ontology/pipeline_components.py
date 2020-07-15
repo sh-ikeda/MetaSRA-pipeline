@@ -1792,10 +1792,9 @@ class FilterMappingsToCellLinesByTaxId_Stage:
         remove_nodes = []
         for o_node in text_mining_graph.ontology_term_nodes:
             if o_node.namespace() == "CVCL":
-                for xref in self.cvcl_og.id_to_term[o_node.term_id].xrefs:
-                    if xref.split(":")[0] == "NCBI_TaxID":
-                        if xref.split(":")[1] != str(taxId):
-                            remove_nodes.append(o_node)
+                for id in self.cvcl_og.id_to_term[o_node.term_id].taxids:
+                    if id != str(taxId):
+                        remove_nodes.append(o_node)
 
         for d_node in remove_nodes:
             text_mining_graph.delete_node(d_node)
