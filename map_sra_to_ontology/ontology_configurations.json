@@ -392,5 +392,20 @@
         "exclude_terms": {
         },
         "description": "All terms in the PO"
+    },
+    "21": {
+        "included_ontology_projects": [
+            "EFO"
+        ],
+        "restrict_to_specific_subgraph": true,
+        "subgraph_roots": {
+            "NCBITaxon:3702": "Arabidopsis thaliana"
+        },
+        "id_spaces": [
+            "EFO"
+        ],
+        "exclude_terms": {
+        },
+        "description": "Arabidopsis thaliana-related terms in the EFO"
     }
 }
