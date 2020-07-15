@@ -1,0 +1,10 @@
+{
+    "BTO": "http://purl.obolibrary.org/obo/",
+    "CL": "http://purl.obolibrary.org/obo/",
+    "CLO": "http://purl.obolibrary.org/obo/",
+    "DOID": "http://purl.obolibrary.org/obo/",
+    "EFO": "http://www.ebi.ac.uk/efo/",
+    "Orphanet": "http://www.orpha.net/ORDO/",
+    "UBERON": "http://purl.obolibrary.org/obo/",
+    "CVCL": "http://web.expasy.org/cellosaurus/"
+}

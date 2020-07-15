@@ -15,7 +15,9 @@ from multiprocessing import Pool
 import pkg_resources as pr
 from map_sra_to_ontology import config
 from map_sra_to_ontology import pipeline_components as pc
+# from map_sra_to_ontology import run_sample_type_predictor
 
+import rdflib
 
 def main():
     parser = OptionParser()
@@ -230,6 +232,44 @@ def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
     else:
         with open(output_f, mode='w') as f:
             f.write(lines)
+    return
+
+
+def print_as_turtle(mappings, output_filename):
+    if output_filename == "":
+        output_file = sys.stdout
+    else:
+        output_file = open(output_filename, mode="w")
+
+    with open(pr.resource_filename(__name__, "ont_prefix_to_uri.json")) as f:
+        ont_prefix_to_uri = json.load(f)
+
+    g = rdflib.Graph()
+    schema = rdflib.Namespace("http://schema.org/")
+    provo  = rdflib.Namespace("http://www.w3.org/ns/prov#")
+    rdf    = rdflib.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+    g.namespace_manager.bind("provo", provo)
+
+    for sample in mappings:
+        for mot in sample["mapped ontology terms"]:
+            term_uri_prefix = ont_prefix_to_uri[mot["term_id"].split(":")[0]]
+            mapped_term_uri = term_uri_prefix + mot["term_id"].replace(":", "_")
+            sample_uri = rdflib.URIRef("http://identifiers.org/biosample/" + sample["accession"])
+            bnode1 = rdflib.BNode()
+            bnode2 = rdflib.BNode()
+            g.add((sample_uri, schema["mainEntity"], bnode1))
+            g.add((bnode1, schema["additionalProperty"], bnode2))
+            g.add((bnode2, rdf["type"], schema["PropertyValue"]))
+            g.add((bnode2, provo["wasGeneratedBy"], rdflib.URIRef("http://ddbj.nig.ac.jp/ontology/BioSamplePlus")))
+            g.add((bnode2, schema["name"],
+                   rdflib.Literal(mot["original_key"])))
+            g.add((bnode2, schema["value"],
+                   rdflib.Literal(mot["original_value"])))
+            g.add((bnode2, schema["valueReference"],
+                   rdflib.URIRef(mapped_term_uri)))
+    print(g.serialize(format="turtle", base="http://schema.org/").decode("utf-8"), file=output_file)
+    if output_filename != "":
+        output_file.close()
     return
 
 
