@@ -49,6 +49,7 @@ TERM_ARTIFACT_COMBOS_JSON = pr.resource_filename(resource_package, join("metadat
 PRIOR_KEY_TO_ONT_JSON = pr.resource_filename(resource_package, join("metadata", "prioritizing_key_to_ont.json"))
 # PRIOR_KEY_TO_ONT_JSON = pr.resource_filename(resource_package, join("metadata", "prioritizing_key_to_ont_plant.json"))
 CVCL_TO_CELLLINE_JSON = pr.resource_filename(resource_package, join("metadata", "cvcl_term_to_other_cellline_terms.json"))
+AMBIGUOUS_KEYS_JSON = pr.resource_filename(resource_package, join("metadata", "ambiguous_keys.json"))
 
 TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score dictionary
 
@@ -1801,6 +1802,46 @@ class FilterMappingsToCellLinesByTaxId_Stage:
 
         return text_mining_graph
 
+
+class FilterMappingsFromAmbiguousAttributes_Stage:
+    def __init__(self):
+        with open(AMBIGUOUS_KEYS_JSON, "r") as f:
+            self.ambiguous_keys = json.load(f)
+
+    def run(self, text_mining_graph):
+        keyname_to_o_nodes = defaultdict(lambda: [])
+        o_node_to_keynames = defaultdict(lambda: [])
+        to_remove = False
+        for kv_node in text_mining_graph.key_val_nodes:
+            keyname = kv_node.key
+            for edge in text_mining_graph.forward_edges[kv_node]:
+                if isinstance(edge, DerivesInto) and edge.derivation_type == "val":
+                    for t_node in text_mining_graph.forward_edges[kv_node][edge]:
+                        for d_node in text_mining_graph.downstream_nodes(t_node):
+                            if isinstance(d_node, OntologyTermNode):
+                                keyname_to_o_nodes[keyname].append(d_node)
+                                o_node_to_keynames[d_node].append(keyname)
+                        if kv_node.key not in self.ambiguous_keys and \
+                           len(keyname_to_o_nodes[keyname]) != 0:
+                            to_remove = True
+
+        remove_nodes = []
+        if to_remove:
+            for keyname in keyname_to_o_nodes:
+                if keyname in self.ambiguous_keys:
+                    for o_node in keyname_to_o_nodes[keyname]:
+                        to_remove_this = True
+                        for keyname in o_node_to_keynames[o_node]:
+                            if keyname not in self.ambiguous_keys:
+                                to_remove_this = False
+                                break
+                        if to_remove_this:
+                            remove_nodes.append(o_node)
+
+        for o_node in remove_nodes:
+            text_mining_graph.delete_node(o_node)
+
+        return text_mining_graph
 
 ###################################################################################
 #   Helper methods
