@@ -130,18 +130,26 @@ def main():
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] Run pipeline on key vals\n'.format(ct, processes))
     outputs = []
+    output_for_prediction = []
     for tag_to_val, mappings in zip(tag_to_vals, all_mappings):
-        outputs.append(run_pipeline_on_key_vals(tag_to_val,
-                                                ont_id_to_og,
-                                                mappings))
+        res1, res2 = run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mappings)
+        outputs.append(res1)
+        output_for_prediction.append(res2)
 
     sys.stderr.write('[{}] Writing.\n'.format(ct))
     if output_f.split(".")[-1] == "json":
         output_json = json.dumps(outputs, indent=4, separators=(',', ': '))
         with open(output_f, mode='w') as f:
             f.write(output_json)
+    elif output_f.split(".")[-1] == "ttl":
+        print_as_turtle(outputs, output_f)
     else:
         print_as_tsv(outputs, tag_to_vals, output_f)
+
+    # with open("for_sample_type_prediction"+output_f, mode='w') as f:
+    #     output_json = json.dumps(output_for_prediction,
+    #                              indent=4, separators=(',', ': '))
+    #     f.write(output_json)
     sys.stderr.write('[{}] Done.\n'.format(ct))
 
 
@@ -183,16 +191,29 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
             sup_terms.update(og.recursive_relationship(term_id, ['is_a', 'part_of']))
     mapped_terms = list(sup_terms)
 
+    # predicted, confidence = run_sample_type_predictor.run_sample_type_prediction(
+    #     tag_to_val, 
+    #     mapped_terms, 
+    #     real_val_props
+    # )
+    for_sample_type_prediction = {
+        "tag_to_val": tag_to_val,
+        "mapped_terms": mapped_terms,
+        "real_val_props": real_val_props
+    }
+
     mapping_data = {
         "mapped ontology terms": mapped_terms_details,
         "real-value properties": real_val_props
+        # "sample type": predicted,
+        # "sample-type confidence": confidence
     }
 
     accession = tag_to_val.get("accession")
     if accession:
         mapping_data["accession"] = accession
 
-    return mapping_data
+    return mapping_data, for_sample_type_prediction
 
 
 def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,

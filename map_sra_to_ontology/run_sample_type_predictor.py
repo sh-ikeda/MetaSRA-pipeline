@@ -3,9 +3,11 @@ import sys
 import os
 from os.path import join
 import pkg_resources as pr
+import json
+import datetime
 
-from . import predict_sample_type
-from .predict_sample_type.learn_classifier import *
+from map_sra_to_ontology import predict_sample_type
+from map_sra_to_ontology.predict_sample_type.learn_classifier import *
 
 # The dilled objects need the python path to point to the predict_sample_type
 # directory
@@ -32,3 +34,24 @@ def run_sample_type_prediction(tag_to_val, mapped_terms, real_props):
 
     return predicted, confidence
 
+
+def main():
+    input_f = sys.argv[1]
+    with open(input_f, "r") as f:
+        input_json = json.load(f)
+
+    ct = datetime.datetime.now()
+    sys.stderr.write('[{}] Start prediction\n'.format(ct))
+    for s in input_json:
+        predicted, confidence = run_sample_type_prediction(
+            s["tag_to_val"],
+            s["mapped_terms"],
+            s["real_val_props"])
+        print(predicted)
+        print(confidence)
+        ct = datetime.datetime.now()
+        sys.stderr.write('[{}]\n'.format(ct))
+
+
+if __name__ == "__main__":
+    main()
