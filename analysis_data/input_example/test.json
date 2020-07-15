@@ -1,0 +1,139 @@
+[
+  {
+    "accession" : "SAMEA1357027",
+    "characteristics" : {
+      "cell type" : [ {
+        "text" : "human embryonic kidney cells",
+        "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0001182" ]
+      } ],
+      "description" : [ {
+        "text" : "NT_shRNA_2"
+      } ],
+      "organism" : [ {
+        "text" : "Homo sapiens",
+        "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+      } ],
+      "sample source name" : [ {
+        "text" : "Non-targeting shRNA RNA-seq"
+      } ],
+      "sample title" : [ {
+        "text" : "Non-targeting shRNA rep 2 RNA-seq"
+      } ],
+      "strain" : [ {
+        "text" : "HEK293T",
+        "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0001184" ]
+      } ]
+    }
+  },
+  {
+    "accession" : "SAMD00226305",
+    "characteristics" : {
+      "External Id" : [ {
+        "text" : "SAMD00226305",
+        "tag" : "Namespace:BioSample"
+      } ],
+      "INSDC center name" : [ {
+        "text" : "Department of Medical Biochemistry"
+      } ],
+      "INSDC first public" : [ {
+        "text" : "2020-05-12T00:00:00Z"
+      } ],
+      "INSDC last update" : [ {
+        "text" : "2020-05-24T07:26:17.927Z"
+      } ],
+      "INSDC secondary accession" : [ {
+        "text" : "DRS139337"
+      } ],
+      "INSDC status" : [ {
+        "text" : "live"
+      } ],
+      "NCBI submission model" : [ {
+        "text" : "Generic"
+      } ],
+      "NCBI submission package" : [ {
+        "text" : "Generic.1.0"
+      } ],
+      "SRA accession" : [ {
+        "text" : "DRS139337"
+      } ],
+      "biomaterial provider" : [ {
+        "text" : "JCRB Cell Bank",
+        "tag" : "attribute"
+      } ],
+      "cell line" : [ {
+        "text" : "KNS-42",
+        "tag" : "attribute"
+      } ],
+      "cell type" : [ {
+        "text" : "glioma",
+        "tag" : "attribute"
+      } ],
+      "genotype" : [ {
+        "text" : "G34V rep2 knocked out",
+        "tag" : "attribute"
+      } ],
+      "organism" : [ {
+        "text" : "Homo sapiens",
+        "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+      } ],
+      "sample name" : [ {
+        "text" : "KNS42_G34V_delta2",
+        "tag" : "attribute"
+      } ],
+      "title" : [ {
+        "text" : "KNS-42 cell line which is established from glioblastoma knocked out G34V rep2"
+      } ]
+    }
+  },
+  {
+    "accession" : "SAMEA104450202",
+    "characteristics" : {
+      "ENA checklist" : [ {
+        "text" : "ERC000011"
+      } ],
+      "INSDC center alias" : [ {
+        "text" : "Klinikum rechts der Isar, II. Medizinische Klinik"
+      } ],
+      "INSDC center name" : [ {
+        "text" : "Klinikum rechts der Isar, II. Medizinische Klinik"
+      } ],
+      "INSDC first public" : [ {
+        "text" : "2017-12-25T17:02:41Z"
+      } ],
+      "INSDC last update" : [ {
+        "text" : "2018-01-15T06:46:46Z"
+      } ],
+      "INSDC status" : [ {
+        "text" : "public"
+      } ],
+      "SRA accession" : [ {
+        "text" : "ERS2068144"
+      } ],
+      "alias" : [ {
+        "text" : "3’-RNA-Seq of KRASMUT-driven human primary pancreatic cancer cell lines overexpressing KRASG12D or GFP"
+      } ],
+      "cell line" : [ {
+        "text" : "KRASMUT-driven human primary pancreatic cancer cell lines overexpressing KRASG12D or GFP"
+      } ],
+      "description" : [ {
+        "text" : "Barcode - Sample_OE-Construct_Day; TGTTTA - PANC0327_KRASG12D_Day1; CCCACG - PANC0327_GFP_Day1; CGGTGG - PANC0327_KRASG12D_Day3; AAAGTT - PANC0327_GFP_Day3; ATCAAA - PANC0327_KRASG12D_Day5; TTAATC - PANC0327_GFP_Day5; TTATTG - HUPT3_KRASG12D_Day1; CCGGAC - HUPT3_GFP_Day1; GACCGC - HUPT3_KRASG12D_Day3; AATACA - HUPT3_GFP_Day3; ATTCTA - HUPT3_KRASG12D_Day5; TTGAAA - HUPT3_GFP_Day5"
+      } ],
+      "organism" : [ {
+        "text" : "Mus musculus",
+        "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_10090" ]
+      } ],
+      "strain" : [ {
+        "text" : "C57Bl/6;129S6/SvEv mixed background"
+      } ],
+      "synonym" : [ {
+        "text" : "3’-RNA-Seq of KRASMUT-driven human primary pancreatic cancer cell lines overexpressing KRASG12D or GFP"
+      } ],
+      "tissue type" : [ {
+        "text" : "primary pancreatic tumor"
+      } ],
+      "title" : [ {
+        "text" : "3’-RNA-Seq of KRASMUT-driven human primary pancreatic cancer cell lines overexpressing KRASG12D or GFP"
+      } ]
+    }
+  }
+]
