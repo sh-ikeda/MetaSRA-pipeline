@@ -136,4 +136,8 @@ del ont_name_to_ont_id["UBERON_all"], ont_name_to_ont_id["UO"], ont_name_to_ont_
 del ont_id_to_og["5"], ont_id_to_og["7"], ont_id_to_og["9"]
 
 sys.stderr.write('[{}] dill dump\n'.format(datetime.datetime.now()))
-dill.dump_session('pipeline_init.dill')
+#dill.dump_session('pipeline_init.dill')
+with open("pipeline_init_var.dill", "wb") as f:
+    dill.dump((pipeline, ont_id_to_og), f)
+
+sys.stderr.write('[{}] Done.\n'.format(datetime.datetime.now()))

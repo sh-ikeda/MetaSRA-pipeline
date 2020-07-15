@@ -76,15 +76,22 @@ def main():
     # Load ontologies
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] Initializing pipeline.\n'.format(ct))
-    dill.load_session(init_dill)
-    # ont_name_to_ont_id = {
-    #     "UBERON":"12",
-    #     "CL":"1",
-    #     "DOID":"2",
-    #     "EFO":"16",
-    #     "CVCL":"4"}
-    # ont_id_to_og = {x:load_ontology.load(x)[0] for x in list(ont_name_to_ont_id.values())}
-    # pipeline = p_48()
+    # dill.load_session(init_dill)
+    ont_name_to_ont_id = {
+        "UBERON": "12",
+        "CL": "1",
+        "DOID": "2",
+        "EFO": "16",
+        "CVCL": "4",
+        "ORDO": "19",
+        "UBERON_all": "5",
+        "UO": "7",
+        "EFO_all": "9"
+    }
+    with open(init_dill, "rb") as f:
+        vars = dill.load(f)
+        pipeline = vars[0]
+        ont_id_to_og = vars[1]
 
     # TWO_CHAR_MAPPINGS_JSON = "/mnt/c/Users/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/two_char_mappings.json"
     if keywords_f != "":
