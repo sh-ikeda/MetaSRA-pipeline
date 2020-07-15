@@ -1295,40 +1295,43 @@ class RemoveSubIntervalOfMatchedBlockAncestralLink_Stage:
 
             if VERBOSE:
                 print("\n\nNode %s has superphrase nodes: %s" % (t_node, superphrase_nodes))
-            text_mining_graph.delete_node(t_node)
-            # exclude_edges = set([DerivesInto("N-Gram"),  DerivesInto("Delimiter")])
-            # superphrase_node_to_reachable = {x:text_mining_graph.downstream_nodes(x, exclude_edges=exclude_edges) for x in superphrase_nodes}
+            # ここから
+            # text_mining_graph.delete_node(t_node)
+            # ここまで
+            # ここから
+            exclude_edges = set([DerivesInto("N-Gram"),  DerivesInto("Delimiter")])
+            superphrase_node_to_reachable = {x:text_mining_graph.downstream_nodes(x, exclude_edges=exclude_edges) for x in superphrase_nodes}
            
-            # mapped_from_t = [x for x in text_mining_graph.get_children(t_node) if isinstance(x, MappingTargetNode)]
+            mapped_from_t = [x for x in text_mining_graph.get_children(t_node) if isinstance(x, MappingTargetNode)]
             
-            # keep_as_mappable = set()
-            # for mft in mapped_from_t:
-            #     # Check if this mapped node from this token node is also reachable from all superphrase nodes.
-            #     # If so, we want to maintain its reachability from the current token node.
-            #     reachable_from_all_supernodes = True
-            #     for superphrase_node, reachable_from_superphrase in superphrase_node_to_reachable.items():
-            #         if mft not in reachable_from_superphrase:
-            #             reachable_from_all_supernodes = False
-            #             break
-            #     if reachable_from_all_supernodes:
-            #         if VERBOSE:
-            #             print("The node %s that is reachable from the token node is reachable from all of the superphrase nodes." % mft)
-            #         keep_as_mappable.add(mft)
+            keep_as_mappable = set()
+            for mft in mapped_from_t:
+                # Check if this mapped node from this token node is also reachable from all superphrase nodes.
+                # If so, we want to maintain its reachability from the current token node.
+                reachable_from_all_supernodes = True
+                for superphrase_node, reachable_from_superphrase in superphrase_node_to_reachable.items():
+                    if mft not in reachable_from_superphrase:
+                        reachable_from_all_supernodes = False
+                        break
+                if reachable_from_all_supernodes:
+                    if VERBOSE:
+                        print("The node %s that is reachable from the token node is reachable from all of the superphrase nodes." % mft)
+                    keep_as_mappable.add(mft)
 
-            # del_edges = deque()
-            # for edge in text_mining_graph.forward_edges[t_node]:
-            #     for targ_node in text_mining_graph.forward_edges[t_node][edge]:
-            #         reachable_from_targ_node = set(text_mining_graph.downstream_nodes(targ_node))
-            #         if len(reachable_from_targ_node.intersection(keep_as_mappable)) == 0:
-            #             del_edges.append((t_node, targ_node, edge))
-            #         else:
-            #             if VERBOSE:
-            #                 print("Target node from the current node, %s, can reach a node that we want to keep as mappable: %s" % (targ_node, reachable_from_targ_node.intersection(keep_as_mappable)))
+            del_edges = deque()
+            for edge in text_mining_graph.forward_edges[t_node]:
+                for targ_node in text_mining_graph.forward_edges[t_node][edge]:
+                    reachable_from_targ_node = set(text_mining_graph.downstream_nodes(targ_node))
+                    if len(reachable_from_targ_node.intersection(keep_as_mappable)) == 0:
+                        del_edges.append((t_node, targ_node, edge))
+                    else:
+                        if VERBOSE:
+                            print("Target node from the current node, %s, can reach a node that we want to keep as mappable: %s" % (targ_node, reachable_from_targ_node.intersection(keep_as_mappable)))
 
-            # for d in del_edges:
-            #     #print "This edge did not make the cut! %s --%s--> %s" % (t_node, edge, targ_node)
-            #     text_mining_graph.delete_edge(d[0], d[1], d[2])
-            
+            for d in del_edges:
+                #print "This edge did not make the cut! %s --%s--> %s" % (t_node, edge, targ_node)
+                text_mining_graph.delete_edge(d[0], d[1], d[2])
+            # ここまで
 
         return text_mining_graph
 
