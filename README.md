@@ -19,7 +19,7 @@ This project requires the following Python libraries:
 ## Setup
 
 In order to run the pipeline, a few external resources must be downloaded and configured.  First, set up the PYTHONPATH environment variable to point to the directory containing the map_sra_to_ontology directory as well as to the bktree directory.  Then, to set up the pipeline, run the following commands:
-  
+
     cd ./setup_map_sra_to_ontology
     ./setup.sh
 
@@ -30,26 +30,6 @@ This script will download the latest ontology OBO files, the SPECIALIST Lexicon 
 The pipeline can be run on a set of sample-specific key-value pairs
 using the run_pipeline.py script. This script is used as follows:
 
-    python run_pipeline.py <input key-value pairs JSON file>
+    python run_pipeline.py -f <input key-value pairs JSON file>
 
-The script accepts as input a JSON file storing a list of sets of key-value pairs.
-For example, the pipeline will accept a file with the following content:
-
-    [
-      {   
-        "ID": "P352_141",
-        "age": "48",
-        "bmi": "24",
-        "gender": "female",
-        "source_name": "vastus lateralis muscle_female",
-        "tissue": "vastus lateralis muscle"
-      },
-      {   
-        "ID": "P352_141",
-        "age": "29",
-        "bmi": "30",
-        "gender": "male",
-        "source_name": "vastus lateralis muscle_female",
-        "tissue": "vastus lateralis muscle"
-      }
-     ]
+The script accepts as input a JSON file storing an array of objects which have corresponding accession id of BioSample and its characteristics (attributes) key-value pairs. Input example is at `analysis_data/input_example/test.json`. The JSON file can be retrieved from the EBI BioSample (download JSON from the page of each entry, then put the content in an array).
