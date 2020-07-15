@@ -37,7 +37,7 @@ class Synonym:
 
 class Term:
     def __init__(self, id, name, definition=None, 
-        synonyms=[], comment=None, xrefs=None, 
+        synonyms=[], comment=None, xrefs=None, taxids=None,
         relationships={}, property_values=[], subsets=[], namespace=None):
         """
         Args:
@@ -63,6 +63,7 @@ class Term:
         self.property_values = property_values
         self.subsets = subsets
         self.namespace = namespace
+        self.taxids = taxids
 
     def __repr__(self):
         rep = {
@@ -72,7 +73,8 @@ class Term:
             "synonyms": self.synonyms,  
             "relationships": self.relationships,
             "subsets": self.subsets,
-            "xrefs": self.xrefs
+            "xrefs": self.xrefs,
+            "taxid": self.taxids
         }
         return str(rep)
 
@@ -491,6 +493,14 @@ def parse_entity(lines, restrict_to_idspaces):
             xrefs.add(xref.split("!")[0].strip())
         return list(xrefs)
 
+    def extract_taxids(raw_xrefs):
+        taxids = set()
+        for xref in raw_xrefs:
+            if xref.split(":")[0] == "NCBI_TaxID":
+                id = xref.split("!")[0].strip().split(":")[1]
+                taxids.add(id)
+        return taxids
+
     def is_include_term(attrs):
         if restrict_to_idspaces:
             term_prefix = attrs["id"][0].split(":")[0]
@@ -525,6 +535,12 @@ def parse_entity(lines, restrict_to_idspaces):
 
     def parse_namespace(attrs):
         return attrs["namespace"][0] if "namespace" in list(attrs.keys()) else None
+
+    def parse_taxids(attrs):
+        taxids = []
+        if "xref" in attrs:
+            taxids = extract_taxids(attrs["xref"])
+        return taxids
 
     def extract_property_values(raw_prop_vals):
         prop_vals = set()
@@ -571,6 +587,7 @@ def parse_entity(lines, restrict_to_idspaces):
         synonyms = parse_synonyms(attrs)
         is_obsolete = parse_is_obsolete(attrs)
         xrefs = parse_xrefs(attrs)
+        taxids = parse_taxids(attrs)
         comment = parse_comment(attrs)
         relationships = parse_relationships(attrs)
         property_values = parse_property_values(attrs)    
@@ -581,7 +598,8 @@ def parse_entity(lines, restrict_to_idspaces):
         term = Term(attrs["id"][0], attrs["name"][0].strip(), 
             definition=definition, synonyms=set(synonyms), xrefs=xrefs, 
             relationships=relationships, property_values=property_values, 
-            comment=comment, subsets=subsets, namespace=namespace)
+            comment=comment, subsets=subsets, namespace=namespace,
+            taxids=taxids)
  
         return (ENTITY_TERM, term, is_obsolete)        
 

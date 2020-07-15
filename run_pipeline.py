@@ -66,7 +66,7 @@ def main():
         for tag_to_val in biosample_json:
             entry = {}
             entry["accession"] = tag_to_val["accession"]
-            entry["taxId"] = tag_to_val.get("taxId", "")
+            entry["taxId"] = str(tag_to_val.get("taxId", ""))
             for k in tag_to_val["characteristics"]:
                 val = tag_to_val["characteristics"][k][0]["text"]
                 if k != "accession" and len(val) < 100 and k != "taxId":
@@ -216,7 +216,7 @@ def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
             lines += line
             mapped_keys.add(mot["original_key"])
         for key in acc_to_kvs[sample["accession"]]:
-            if key == "accession":
+            if key in ["accession", "taxId"]:
                 continue
             if key not in mapped_keys:
                 line = sample["accession"]
