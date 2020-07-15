@@ -1,8 +1,16 @@
 map_sra_to_ontology/predict_sample_type/backup/*
 map_sra_to_ontology/obo/*
 map_sra_to_ontology/LEX/*
+analysis_data/term_mapping/*
+map_sra_to_ontology/fuzzy_matching_index/fuzzy_match_bk_tree_arabi.pickle
+map_sra_to_ontology/fuzzy_matching_index/fuzzy_match_bk_tree_plant.pickle
+map_sra_to_ontology/fuzzy_matching_index/fuzzy_match_string_data_arabi.json
+map_sra_to_ontology/fuzzy_matching_index/fuzzy_match_string_data_plant.json
 pipeline_preparations.dill
 pipeline_init.dill
+pipeline_init_debug.dill
+pipeline_init_plant.dill
 *.bak
+*.bak2
 *.pyc
 *~
