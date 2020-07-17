@@ -11,10 +11,6 @@ from map_sra_to_ontology import pipeline_components as pc
 import datetime
 
 
-def dd_init():
-    return 1.0
-
-
 def p_48(ont_id_to_og):
     sys.stderr.write('[{}] spec_lex\n'.format(datetime.datetime.now()))
     spec_lex = pc.SpecialistLexicon(config.specialist_lex_location())
@@ -110,7 +106,7 @@ def p_48(ont_id_to_og):
         #cell_culture
     ]
     # return pc.Pipeline(stages, defaultdict(lambda: 1.0))
-    return pc.Pipeline(stages, defaultdict(dd_init))
+    return pc.Pipeline(stages)
 
 
 # Load ontologies
@@ -140,7 +136,7 @@ del ont_id_to_og["5"], ont_id_to_og["7"], ont_id_to_og["9"]
 
 sys.stderr.write('[{}] dill dump\n'.format(datetime.datetime.now()))
 #dill.dump_session('pipeline_init.dill')
-with open("pipeline_init_var.dill", "wb") as f:
+with open("pipeline_init.dill", "wb") as f:
     dill.dump((pipeline, ont_id_to_og), f)
 
 sys.stderr.write('[{}] Done.\n'.format(datetime.datetime.now()))

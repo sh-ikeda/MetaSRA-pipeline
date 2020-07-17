@@ -51,7 +51,7 @@ PRIOR_KEY_TO_ONT_JSON = pr.resource_filename(resource_package, join("metadata", 
 CVCL_TO_CELLLINE_JSON = pr.resource_filename(resource_package, join("metadata", "cvcl_term_to_other_cellline_terms.json"))
 AMBIGUOUS_KEYS_JSON = pr.resource_filename(resource_package, join("metadata", "ambiguous_keys.json"))
 
-TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score dictionary
+# TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score dictionary
 
 VERBOSE = False
 
@@ -120,14 +120,14 @@ class RealValueProperty:
 
 
 class Pipeline:
-    def __init__(self, stages, scoring_strategy):
+    def __init__(self, stages):
         self.stages = stages
-        self.scoring_strategy = scoring_strategy
+        #self.scoring_strategy = scoring_strategy
 
     def run(self, tag_to_val, covered_query_map):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
         taxId = ""
-                
+
         # Create initial text-mining-graph
         for tag, val in tag_to_val.items():
             # kv_node = KeyValueNode(
