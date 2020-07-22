@@ -269,13 +269,15 @@ def print_as_turtle(mappings, output_filename):
     schema = rdflib.Namespace("http://schema.org/")
     provo  = rdflib.Namespace("http://www.w3.org/ns/prov#")
     rdf    = rdflib.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+    xsd    = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
+    obo    = rdflib.Namespace("http://purl.obolibrary.org/obo/")
     g.namespace_manager.bind("provo", provo)
-
+    g.namespace_manager.bind("obo", obo)
     for sample in mappings:
+        sample_uri = rdflib.URIRef("http://identifiers.org/biosample/" + sample["accession"])
         for mot in sample["mapped ontology terms"]:
             term_uri_prefix = ont_prefix_to_uri[mot["term_id"].split(":")[0]]
             mapped_term_uri = term_uri_prefix + mot["term_id"].replace(":", "_")
-            sample_uri = rdflib.URIRef("http://identifiers.org/biosample/" + sample["accession"])
             bnode1 = rdflib.BNode()
             bnode2 = rdflib.BNode()
             g.add((sample_uri, schema["mainEntity"], bnode1))
@@ -288,6 +290,24 @@ def print_as_turtle(mappings, output_filename):
                    rdflib.Literal(mot["original_value"])))
             g.add((bnode2, schema["valueReference"],
                    rdflib.URIRef(mapped_term_uri)))
+        for rvp in sample["real-value properties"]:
+            rvp_value = rvp["value"]
+            bnode1 = rdflib.BNode()
+            bnode2 = rdflib.BNode()
+            g.add((sample_uri, schema["mainEntity"], bnode1))
+            g.add((bnode1, schema["additionalProperty"], bnode2))
+            g.add((bnode2, rdf["type"], schema["PropertyValue"]))
+            g.add((bnode2, provo["wasGeneratedBy"], rdflib.URIRef("http://ddbj.nig.ac.jp/ontology/BioSamplePlus")))
+            g.add((bnode2, schema["name"],
+                   rdflib.Literal(rvp["original_key"])))
+            if rvp["unit_id"] == "missing":
+                g.add((bnode2, schema["valueReference"], rdflib.Literal(rvp_value, datatype=xsd["decimal"])))
+            else:
+                unit_uri_prefix = ont_prefix_to_uri[rvp["unit_id"].split(":")[0]]
+                unit_uri = unit_uri_prefix + rvp["unit_id"].replace(":", "_")
+                g.add((bnode2, schema["valueReference"],
+                       rdflib.Literal(rvp_value, datatype=rdflib.URIRef(unit_uri))))
+
     print(g.serialize(format="turtle", base="http://schema.org/").decode("utf-8"), file=output_file)
     if output_filename != "":
         output_file.close()

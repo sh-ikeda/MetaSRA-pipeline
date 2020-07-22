@@ -6,5 +6,6 @@
     "EFO": "http://www.ebi.ac.uk/efo/",
     "Orphanet": "http://www.orpha.net/ORDO/",
     "UBERON": "http://purl.obolibrary.org/obo/",
-    "CVCL": "http://web.expasy.org/cellosaurus/"
+    "CVCL": "http://web.expasy.org/cellosaurus/",
+    "UO": "http://purl.obolibrary.org/obo/"
 }
