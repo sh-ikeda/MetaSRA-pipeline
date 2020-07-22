@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import mutual_info_score
 import numpy as np
 from scipy import sparse
-
+import sys
 
 def mutual_info_rank_features(feature_vecs, binary_labels):
     """
@@ -182,7 +182,7 @@ class OneVsRestClassifier:
 
 
         if self.use_predicted_term_rules:
-            print "Using predicted term rules"
+            sys.stderr.write("Using predicted term rules\n")
 
             is_xenograft = False
             for pred_term in predicted_terms:
@@ -229,16 +229,16 @@ class OneVsRestClassifier:
                 # If 'stem cell' is mapped, then it can't be an immortalized 
                 # cell line, tissue, or primary cell sample
                 if "CL:0000034" in predicted_terms:
-                    print "Sample mapped to stem cell term CL:0000034" 
+                    sys.stderr.write("Sample mapped to stem cell term CL:0000034\n")
                     class_to_confidence["cell_line"] = 0.0
                     class_to_confidence["tissue"] = 0.0
                     class_to_confidence["primary_cells"] = 0.0
                 # If a specific cell-type is mapped, then it likely is 
                 # not a tissue sample
                 elif "CL:0002371" in predicted_terms:
-                    print (
+                    sys.stderr.write(
                         "Sample mapped to a specific cell-type as "
-                        "indicated by mapped term CL:0002371"
+                        "indicated by mapped term CL:0002371\n"
                     )
                     class_to_confidence["tissue"] = 0.0
                 
@@ -254,14 +254,14 @@ class OneVsRestClassifier:
                      
 
         sum_conf = sum(class_to_confidence.values())
-        print "Class to confidence before normalizing: %s" % class_to_confidence
-        print "Sum before normalizing: %f" % sum_conf
+        sys.stderr.write("Class to confidence before normalizing: %s\n" % class_to_confidence)
+        sys.stderr.write("Sum before normalizing: %s\n" % sum_conf)
         if sum_conf > 0:
             class_to_confidence = {
                 k:v/sum_conf 
                 for k,v in class_to_confidence.iteritems()
             }
-        print "Class to confidence: %s" % class_to_confidence
+        sys.stderr.write("Class to confidence: %s\n" % class_to_confidence)
         return max(
             [
                 (k,v) 

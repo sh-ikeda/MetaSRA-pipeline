@@ -1,6 +1,5 @@
 import dill
 import sys
-import os
 from os.path import join
 import pkg_resources as pr
 import json
@@ -36,7 +35,7 @@ def run_sample_type_prediction(tag_to_val, mapped_terms, real_props):
 
 
 def main():
-    input_f = sys.argv[1]
+    input_f = sys.argv[-1]
     with open(input_f, "r") as f:
         input_json = json.load(f)
 
@@ -47,8 +46,7 @@ def main():
             s["tag_to_val"],
             s["mapped_terms"],
             s["real_val_props"])
-        print(predicted)
-        print(confidence)
+        print("\t".join([s["tag_to_val"]["accession"], predicted, str(confidence)]))
         ct = datetime.datetime.now()
         sys.stderr.write('[{}]\n'.format(ct))
 

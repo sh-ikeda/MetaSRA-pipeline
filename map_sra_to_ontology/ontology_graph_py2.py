@@ -4,10 +4,11 @@ import re
 from optparse import OptionParser
 from Queue import Queue
 from sets import Set
+import sys
 try:
     import pygraphviz as pgv
 except:
-    print "Unable to import pygraphviz. Visualization is disabled."
+    sys.stderr.write("Unable to import pygraphviz. Visualization is disabled.\n")
 import config
 
 import pkg_resources as pr
@@ -375,7 +376,7 @@ def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False):
         
 
     header_info = {}
-    print "Loading ontology from %s ..." % obo_file
+    sys.stderr.write("Loading ontology from %s ...\n" % obo_file)
     name_to_ids = {}
     id_to_term = {}
     with open(obo_file, 'r') as f:
