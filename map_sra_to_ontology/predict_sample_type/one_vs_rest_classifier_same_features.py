@@ -4,12 +4,12 @@
 #   narrowed down with a set of rules based on domain knowledge.
 #############################################################################
 
-from optparse import OptionParser
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import mutual_info_score
-import numpy as np
 from scipy import sparse
 import sys
+
+VERBOSE = False
 
 def mutual_info_rank_features(feature_vecs, binary_labels):
     """
@@ -60,13 +60,18 @@ class OneVsRestClassifier:
         term_vec_scaffold, 
         cvcl_og, 
         num_features_per_class=50, 
-        use_predicted_term_rules=True):
+        use_predicted_term_rules=True,
+        class_to_classifier=None,
+        filt_features=set()):
 
         self.classif_type = classif_type
         self.ngram_vec_scaffold = ngram_vec_scaffold
         self.term_vec_scaffold = term_vec_scaffold
 
-        self.class_to_classifier = None
+        #self.class_to_classifier = None
+        self.class_to_classifier = class_to_classifier
+        self.filt_features = filt_features
+
         self.feature_cutoff = -1 * num_features_per_class
 
         self.use_predicted_term_rules = use_predicted_term_rules
@@ -172,17 +177,18 @@ class OneVsRestClassifier:
 
         class_to_confidence = {}
 
-        for clss, classif in self.class_to_classifier.iteritems():
+        for clss, classif in self.class_to_classifier.items():
             new_q_feature_v = self._features(q_feature_v)
             pred_probs = classif.predict_proba(
                 sparse.csr_matrix([new_q_feature_v])
             )[0]
-            clss_index = list(classif.classes_).index("CLASS")
+            clss_index = list(classif.classes_).index(b"CLASS")
             class_to_confidence[clss] = pred_probs[clss_index]   
 
 
         if self.use_predicted_term_rules:
-            sys.stderr.write("Using predicted term rules\n")
+            if VERBOSE:
+                sys.stderr.write("Using predicted term rules")
 
             is_xenograft = False
             for pred_term in predicted_terms:
@@ -229,17 +235,19 @@ class OneVsRestClassifier:
                 # If 'stem cell' is mapped, then it can't be an immortalized 
                 # cell line, tissue, or primary cell sample
                 if "CL:0000034" in predicted_terms:
-                    sys.stderr.write("Sample mapped to stem cell term CL:0000034\n")
+                    if VERBOSE:
+                        sys.stderr.write("Sample mapped to stem cell term CL:0000034") 
                     class_to_confidence["cell_line"] = 0.0
                     class_to_confidence["tissue"] = 0.0
                     class_to_confidence["primary_cells"] = 0.0
                 # If a specific cell-type is mapped, then it likely is 
                 # not a tissue sample
                 elif "CL:0002371" in predicted_terms:
-                    sys.stderr.write(
-                        "Sample mapped to a specific cell-type as "
-                        "indicated by mapped term CL:0002371\n"
-                    )
+                    if VERBOSE:
+                        sys.stderr.write (
+                            "Sample mapped to a specific cell-type as "
+                            "indicated by mapped term CL:0002371"
+                        )
                     class_to_confidence["tissue"] = 0.0
                 
                 # If 'primary cultured cell'  is mapped, and the 
@@ -254,18 +262,20 @@ class OneVsRestClassifier:
                      
 
         sum_conf = sum(class_to_confidence.values())
-        sys.stderr.write("Class to confidence before normalizing: %s\n" % class_to_confidence)
-        sys.stderr.write("Sum before normalizing: %s\n" % sum_conf)
+        if VERBOSE:
+            sys.stderr.write("Class to confidence before normalizing: %s" % class_to_confidence)
+            sys.stderr.write("Sum before normalizing: %f" % sum_conf)
         if sum_conf > 0:
             class_to_confidence = {
                 k:v/sum_conf 
-                for k,v in class_to_confidence.iteritems()
+                for k,v in class_to_confidence.items()
             }
-        sys.stderr.write("Class to confidence: %s\n" % class_to_confidence)
+        if VERBOSE:
+            sys.stderr.write("Class to confidence: %s" % class_to_confidence)
         return max(
             [
                 (k,v) 
-                for k,v in class_to_confidence.iteritems()
+                for k,v in class_to_confidence.items()
             ], 
             key=lambda x: x[1]
         )
