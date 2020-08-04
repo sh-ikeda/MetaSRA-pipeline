@@ -137,8 +137,11 @@ class Pipeline:
             if tag == "taxId":
                 taxId = val
                 continue
-            kv_node = KeyValueNode(tag, val)
-            tm_graph.add_node(kv_node)
+            if tag == "accession":
+                continue
+            for v in val:
+                kv_node = KeyValueNode(tag, v)
+                tm_graph.add_node(kv_node)
 
         # is_first = True
         # for stage in self.stages:

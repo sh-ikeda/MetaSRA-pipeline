@@ -71,10 +71,18 @@ def main():
             entry["accession"] = tag_to_val["accession"]
             entry["taxId"] = str(tag_to_val.get("taxId", ""))
             for k in tag_to_val["characteristics"]:
-                val = tag_to_val["characteristics"][k][0]["text"]
-                if k != "accession" and len(val) < 100 and k != "taxId":
-                    entry[k] = val
+                if k in ["accession", "taxId"]:
+                    continue
+                vals = []
+                for val in tag_to_val["characteristics"][k]:
+                    if len(val["text"]) < 100:
+                        vals.append(val["text"])
+                if len(vals) != 0:
+                    entry[k] = vals
             tag_to_vals.append(entry)
+                #val = tag_to_val["characteristics"][k][0]["text"]
+                #if k != "accession" and len(val) < 100 and k != "taxId":
+                #    entry[k] = val
 
     # Load ontologies
     ct = datetime.datetime.now()
@@ -235,28 +243,31 @@ def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
     for sample in mappings:
         mapped_keys = set()
         for mot in sample["mapped ontology terms"]:
-            line = sample["accession"]
-            line += "\t" + mot["original_key"]
-            line += "\t" + mot["original_value"]
-            line += "\t" + mot["term_id"]
-            line += "\t" + mot["term_name"]
-            line += "\t" + str(mot["consequent"])
-            line += "\t" + str(mot["full_length_match"])
-            line += "\t" + str(mot["exact_match"])
-            line += "\t" + str(mot["match_target"])
+            line = [sample["accession"],
+                    mot["original_key"],
+                    mot["original_value"],
+                    mot["term_id"],
+                    mot["term_name"],
+                    str(mot["consequent"]),
+                    str(mot["full_length_match"]),
+                    str(mot["exact_match"]),
+                    str(mot["match_target"]),
+                    sample["sample type"],
+                    str(sample["sample-type confidence"])]
             if lines != "":
                 lines += "\n"
-            lines += line
+            lines += "\t".join(line)
             mapped_keys.add(mot["original_key"])
         for key in acc_to_kvs[sample["accession"]]:
             if key in ["accession", "taxId"]:
                 continue
             if key not in mapped_keys:
                 line = sample["accession"]
-                line += "\t" + key + "\t" + acc_to_kvs[sample["accession"]][key]
-                if lines != "":
-                    lines += "\n"
-                lines += line
+                for v in acc_to_kvs[sample["accession"]][key]:
+                    line += "\t" + key + "\t" + v
+                    if lines != "":
+                        lines += "\n"
+                    lines += line
 
     if output_f == "":
         print(lines)

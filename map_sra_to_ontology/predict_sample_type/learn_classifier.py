@@ -231,10 +231,11 @@ def get_ngrams_from_tag_to_val(tag_to_val):
                 x.lower()  
                 for x in get_ngrams(tag, n)[0]
             ]
-            ngrams += [
-                x.lower() 
-                for x in get_ngrams(val, n)[0]
-            ]
+            for v in val:
+                ngrams += [
+                    x.lower() 
+                    for x in get_ngrams(v, n)[0]
+                ]
     ngrams = [x for x in ngrams if len(x) > 1]
     return ngrams
 
