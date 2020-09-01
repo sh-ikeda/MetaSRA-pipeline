@@ -6,23 +6,12 @@ import json
 from collections import defaultdict, deque
 import re
 import pickle
-from multiprocessing import Pool
-#import numpy as np
+#from multiprocessing import Pool
+import numpy as np
 import nltk
-from nltk.tokenize import word_tokenize
-from nltk.util import ngrams
 from nltk.metrics.distance import edit_distance
-
 import pkg_resources as pr
-import json
-import os
-import re
 from os.path import join
-
-# from . import load_ontology
-# from .text_reasoning_graph import *
-# from . import ball_tree_distance
-# from .load_specialist_lex import SpecialistLexicon
 import load_ontology
 from text_reasoning_graph import *
 import ball_tree_distance

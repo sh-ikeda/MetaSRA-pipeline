@@ -18,7 +18,8 @@ from map_sra_to_ontology import pipeline_components as pc
 from map_sra_to_ontology import run_sample_type_predictor
 from os.path import join
 import rdflib
-
+import urllib
+import re
 
 def main():
     parser = OptionParser()
@@ -151,6 +152,7 @@ def main():
             tag_to_val, ont_id_to_og, mappings, vectorizer, model)
         outputs.append(result)
 
+    ct = datetime.datetime.now()
     sys.stderr.write('[{}] Writing.\n'.format(ct))
     if output_f.split(".")[-1] == "json":
         output_json = json.dumps(outputs, indent=4, separators=(',', ': '))
@@ -165,6 +167,7 @@ def main():
     #     output_json = json.dumps(output_for_prediction,
     #                              indent=4, separators=(',', ': '))
     #     f.write(output_json)
+    ct = datetime.datetime.now()
     sys.stderr.write('[{}] Done.\n'.format(ct))
 
 
@@ -287,49 +290,87 @@ def print_as_turtle(mappings, output_filename):
         ont_prefix_to_uri = json.load(f)
 
     g = rdflib.Graph()
-    schema = rdflib.Namespace("http://schema.org/")
-    provo  = rdflib.Namespace("http://www.w3.org/ns/prov#")
-    rdf    = rdflib.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-    xsd    = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
-    obo    = rdflib.Namespace("http://purl.obolibrary.org/obo/")
+    ddbjont = rdflib.Namespace("http://ddbj.nig.ac.jp/ontology/biosample/")
+    schema  = rdflib.Namespace("http://schema.org/")
+    provo   = rdflib.Namespace("http://www.w3.org/ns/prov#")
+    rdf     = rdflib.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+    xsd     = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
+    obo     = rdflib.Namespace("http://purl.obolibrary.org/obo/")
+    ddbj    = rdflib.Namespace("http://ddbj.nig.ac.jp/biosample/")
+    g.namespace_manager.bind("ddbjont", ddbjont)
     g.namespace_manager.bind("provo", provo)
     g.namespace_manager.bind("obo", obo)
+    g.namespace_manager.bind("ddbj", ddbj)
+    g.namespace_manager.bind("", schema)
+    sample_type_dict = {
+        "cell_line": "CellLine",
+        "primary_cells": "PrimaryCell",
+        "stem_cells": "StemCell",
+        "tissue": "Tissue",
+        "in_vitro_differentiated_cells": "InVitroDifferintiatedCells",
+        "induced_pluripotent_stem_cells": "IPSCellLine"
+    }
     for sample in mappings:
-        sample_uri = rdflib.URIRef("http://identifiers.org/biosample/" + sample["accession"])
+        # sample_uri_str = "http://identifiers.org/biosample/" + sample["accession"]
+        # sample_type_uri = rdflib.URIRef(sample_uri_str + "#AnnotatedSampleType")
+        sample_type_uri = ddbj[sample["accession"] + "#" + "AnnotatedSampleType"]
+        g.add((ddbj[sample["accession"]], schema["additionalProperty"],
+               sample_type_uri))
+        g.add((sample_type_uri, rdf["type"], schema["PropertyValue"]))
+        g.add((sample_type_uri, schema["name"],
+               rdflib.Literal("annotated sample type")))
+        g.add((sample_type_uri, schema["value"],
+               rdflib.Literal(sample["sample type"])))
+        g.add((sample_type_uri, schema["valueReference"],
+               ddbjont[sample_type_dict[sample["sample type"]]]))
+        g.add((sample_type_uri, ddbjont["annotationConfidence"],
+               rdflib.Literal(sample["sample-type confidence"],
+                              datatype=xsd["decimal"])))
+        g.add((sample_type_uri, provo["wasAttributedTo"],
+               ddbjont["BioSamplePlusPipeline"]))
         for mot in sample["mapped ontology terms"]:
             term_uri_prefix = ont_prefix_to_uri[mot["term_id"].split(":")[0]]
-            mapped_term_uri = term_uri_prefix + mot["term_id"].replace(":", "_")
-            bnode1 = rdflib.BNode()
-            bnode2 = rdflib.BNode()
-            g.add((sample_uri, schema["mainEntity"], bnode1))
-            g.add((bnode1, schema["additionalProperty"], bnode2))
-            g.add((bnode2, rdf["type"], schema["PropertyValue"]))
-            g.add((bnode2, provo["wasGeneratedBy"], rdflib.URIRef("http://ddbj.nig.ac.jp/ontology/BioSamplePlus")))
-            g.add((bnode2, schema["name"],
-                   rdflib.Literal(mot["original_key"])))
-            g.add((bnode2, schema["value"],
-                   rdflib.Literal(mot["original_value"])))
-            g.add((bnode2, schema["valueReference"],
-                   rdflib.URIRef(mapped_term_uri)))
+            mapped_term_uri = rdflib.URIRef(term_uri_prefix + mot["term_id"].replace(":", "_"))
+            # property_value_uri = rdflib.URIRef(
+            #     sample_uri_str + "#" + urllib.parse.quote(mot["original_key"]))
+            property_value_uri = ddbj[sample["accession"] + "#" + urllib.parse.quote_plus(mot["original_key"])]
+            g.add((property_value_uri, schema["valueReference"],
+                   mapped_term_uri))
+            g.add((property_value_uri, provo["wasAttributedTo"],
+                   ddbjont["BioSamplePlusPipeline"]))
+
         for rvp in sample["real-value properties"]:
             rvp_value = rvp["value"]
-            bnode1 = rdflib.BNode()
-            bnode2 = rdflib.BNode()
-            g.add((sample_uri, schema["mainEntity"], bnode1))
-            g.add((bnode1, schema["additionalProperty"], bnode2))
-            g.add((bnode2, rdf["type"], schema["PropertyValue"]))
-            g.add((bnode2, provo["wasGeneratedBy"], rdflib.URIRef("http://ddbj.nig.ac.jp/ontology/BioSamplePlus")))
-            g.add((bnode2, schema["name"],
-                   rdflib.Literal(rvp["original_key"])))
+            property_value_uri = ddbj[sample["accession"] + "#" + urllib.parse.quote_plus(mot["original_key"])]
+            # property_value_uri = rdflib.URIRef(
+            #     sample_uri_str + "#" + urllib.parse.quote(rvp["original_key"]))
+            g.add((property_value_uri, provo["wasAttributedTo"],
+                   ddbjont["BioSamplePlusPipeline"]))
             if rvp["unit_id"] == "missing":
-                g.add((bnode2, schema["valueReference"], rdflib.Literal(rvp_value, datatype=xsd["decimal"])))
+                g.add((property_value_uri, schema["valueReference"],
+                       rdflib.Literal(rvp_value, datatype=xsd["decimal"])))
             else:
                 unit_uri_prefix = ont_prefix_to_uri[rvp["unit_id"].split(":")[0]]
                 unit_uri = unit_uri_prefix + rvp["unit_id"].replace(":", "_")
-                g.add((bnode2, schema["valueReference"],
+                g.add((property_value_uri, schema["valueReference"],
                        rdflib.Literal(rvp_value, datatype=rdflib.URIRef(unit_uri))))
 
-    print(g.serialize(format="turtle", base="http://schema.org/").decode("utf-8"), file=output_file)
+    # ttl_str = g.serialize(format="turtle", base="http://schema.org/").decode("utf-8")
+    ttl_str = g.serialize(format="turtle").decode("utf-8")
+    # p1 = re.compile("^<http://ddbj.nig.ac.jp/biosample/([^#]+)#([^>]+)>", flags=re.MULTILINE)
+    # #pattern = re.compile("(ddbj:[^ _]+)_REPLACE_")
+    # ttl_str = p1.sub(r"ddbj:\1\\#\2", ttl_str)
+    # p2 = re.compile("^ddbj:[^ ]+ ", flags=re.MULTILINE)
+    # spans = list(p2.finditer(ttl_str))
+    # i = 0
+    # p3 = re.compile("\+")
+    # for sp in [s.span() for s in spans]:
+    #     repl, n = p3.subn("\\+", ttl_str[sp[0]+i:sp[1]+i])
+    #     ttl_str = ttl_str[:sp[0]+i] + repl + ttl_str[sp[1]+i:]
+    #     i += n
+    # # ttl_str = pattern.sub(r"\\+", ttl_str)
+    # ttl_str = "@prefix ddbj: <http://ddbj.nig.ac.jp/biosample/> .\n" + ttl_str
+    print(ttl_str, file=output_file)
     if output_filename != "":
         output_file.close()
     return
