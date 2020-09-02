@@ -321,6 +321,8 @@ def ont_term_features(
 
 
 def get_ngrams(text, n):
+    text = text.replace("''", " ")
+    text = text.replace("``", " ")
 
     delimiters = ["_", "/", "-"]
     for delim in delimiters:
