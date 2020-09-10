@@ -45,7 +45,7 @@ AMBIGUOUS_KEYS_JSON = pr.resource_filename(resource_package, join("metadata", "a
 VERBOSE = False
 
 class MappedTerm:
-    def __init__(self, term_id, consequent, orig_key, orig_val, mapping_path, full_length, exact_match, match_target):
+    def __init__(self, term_id, consequent, orig_key, orig_val, mapping_path, full_length, exact_match, match_target, origin_pos):
         self.term_id = term_id
         self.orig_key = orig_key
         self.orig_val = orig_val
@@ -55,6 +55,7 @@ class MappedTerm:
         self.full_length = full_length
         self.exact_match = exact_match
         self.match_target = match_target
+        self.origin_pos = origin_pos
 
     def to_dict(self):
         path = str(self.mapping_path)
@@ -65,7 +66,8 @@ class MappedTerm:
                 "path_to_mapping": path,
                 "full_length_match": self.full_length,
                 "exact_match": self.exact_match,
-                "match_target": self.match_target
+                "match_target": self.match_target,
+                "origin_pos": self.origin_pos
         }
       
     def __str__(self):
@@ -238,6 +240,7 @@ class Pipeline:
                 is_exact_match = True
                 match_target = ""
                 origin_gram_pos = (-1, -1)
+                used_gram_pos = (-1, -1)
                 while c_node != mapped_node:
                     path.append((
                         c_node,
@@ -247,15 +250,19 @@ class Pipeline:
                     if isinstance(prev[c_node][0], TokenNode):
                         if origin_gram_pos == (-1, -1):
                             origin_gram_pos = (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end)
+                            used_gram_pos = (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end)
                         else:
                             if origin_gram_pos != (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end):
                                 is_full_length_match = False
+                                used_gram_pos = (prev[c_node][0].origin_gram_start, prev[c_node][0].origin_gram_end)
                     if isinstance(prev[c_node][1], FuzzyStringMatch):
                         if prev[c_node][1].edit_dist != 0:
                             is_exact_match = False
                         match_target = prev[c_node][1].match_target
                     c_node = prev[c_node][0]
-                result.append((path[0][0].key, path[0][0].value, path, is_full_length_match, is_exact_match, match_target))
+                used_gram_start = used_gram_pos[0] - origin_gram_pos[0]
+                used_gram_end = used_gram_pos[1] - origin_gram_pos[0]
+                result.append((path[0][0].key, path[0][0].value, path, is_full_length_match, is_exact_match, match_target, used_gram_start, used_gram_end))
         
             # if VERBOSE:
             #     try:
@@ -309,7 +316,8 @@ class Pipeline:
                         r[2],
                         r[3],
                         r[4],
-                        r[5]
+                        r[5],
+                        (r[6], r[7])
                     )
                 )
         
