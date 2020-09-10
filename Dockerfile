@@ -1,6 +1,6 @@
 FROM python:3.6-buster
 
-RUN pip3 install numpy scipy scikit-learn setuptools marisa-trie nltk dill rdflib
+RUN pip3 install numpy scipy scikit-learn setuptools marisa-trie nltk dill rdflib xlsxwriter
 RUN python3 -c "import nltk; nltk.download('punkt')"
 
 COPY . /app/MetaSRA-pipeline/
