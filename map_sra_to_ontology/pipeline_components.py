@@ -1858,7 +1858,6 @@ def is_number(q_str):
         return False
 
 def get_ngrams(text, n):
-    print(text, n)
     words = nltk.word_tokenize(text)
     spans_gen = nltk.tokenize.TreebankWordTokenizer().span_tokenize(text)
     spans = [span for span in spans_gen]
