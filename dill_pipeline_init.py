@@ -9,7 +9,7 @@ from map_sra_to_ontology import load_ontology
 from map_sra_to_ontology import config
 from map_sra_to_ontology import pipeline_components as pc
 import datetime
-
+import pickle
 
 def p_48(ont_id_to_og):
     sys.stderr.write('[{}] spec_lex\n'.format(datetime.datetime.now()))
@@ -136,7 +136,9 @@ del ont_id_to_og["5"], ont_id_to_og["7"], ont_id_to_og["9"]
 
 sys.stderr.write('[{}] dill dump\n'.format(datetime.datetime.now()))
 #dill.dump_session('pipeline_init.dill')
-with open("pipeline_init.dill", "wb") as f:
-    dill.dump((pipeline, ont_id_to_og), f)
+# with open("pipeline_init.dill", "wb") as f:
+#     dill.dump((pipeline, ont_id_to_og), f)
+with open("pipeline_init.pickle", "wb") as f:
+    pickle.dump((pipeline, ont_id_to_og), f)
 
 sys.stderr.write('[{}] Done.\n'.format(datetime.datetime.now()))

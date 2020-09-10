@@ -20,6 +20,8 @@ from os.path import join
 import rdflib
 import urllib
 import re
+import pickle
+
 
 def main():
     parser = OptionParser()
@@ -30,7 +32,8 @@ def main():
                       dest="output_filename", type="str", default="")
     parser.add_option("-i", "--init", help="init dill file",
                       dest="init_dill",
-                      default=pr.resource_filename(__name__, "pipeline_init.dill"))
+                      # default=pr.resource_filename(__name__, "pipeline_init.dill"))
+                      default=pr.resource_filename(__name__, "pipeline_init.pickle"))
     parser.add_option("-k", "--keywords",
                       help="specified mapping keywords json",
                       dest="keywords_filename", type="str", default="")
@@ -101,7 +104,8 @@ def main():
         "EFO_all": "9"
     }
     with open(init_dill, "rb") as f:
-        vars = dill.load(f)
+        # vars = dill.load(f)
+        vars = pickle.load(f)
         pipeline = vars[0]
         ont_id_to_og = vars[1]
 
