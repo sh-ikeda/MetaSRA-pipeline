@@ -64,10 +64,11 @@ def main():
         for tag_to_val in biosample_json:
             entry = {}
             entry["accession"] = tag_to_val["sample_accession"]
+            entry["taxId"] = "9606"
             for k in tag_to_val["attributes"]:
                 val = tag_to_val["attributes"][k]
                 if k != "accession" and len(val) < 100:
-                    entry[k] = val
+                    entry[k] = [val]
             tag_to_vals.append(entry)
     else:
         for tag_to_val in biosample_json:
