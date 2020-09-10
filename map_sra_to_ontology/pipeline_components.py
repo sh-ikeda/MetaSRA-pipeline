@@ -1858,7 +1858,10 @@ def is_number(q_str):
         return False
 
 def get_ngrams(text, n):
+    print(text, n)
     words = nltk.word_tokenize(text)
+    spans_gen = nltk.tokenize.TreebankWordTokenizer().span_tokenize(text)
+    spans = [span for span in spans_gen]
     new_words = []
     for word in words:
         if word == "``":
@@ -1868,37 +1871,46 @@ def get_ngrams(text, n):
         else:
             new_words.append(word)
     words = new_words
-    text = " ".join(words)
+    # text = " ".join(words)
 
     if not words:
         return [], []
 
-    text_i = 0
-    curr_word = words[0]
-    word_i = 0
-    word_char_i = 0
+    # text_i = 0
+    # curr_word = words[0]
+    # word_i = 0
+    # word_char_i = 0
 
-    word_to_indices = defaultdict(lambda: [])
-    for text_i in range(len(text)):
-        if word_char_i == len(words[word_i]):
-            word_i += 1
-            word_char_i = 0
-        if word_i == len(words):
-            break
-        if text[text_i] ==  words[word_i][word_char_i]:
-            word_to_indices[word_i].append(text_i)
-            word_char_i += 1
-        text_i += 1
+    # word_to_indices = defaultdict(lambda: [])
+    # for text_i in range(len(text)):
+    #     if word_char_i == len(words[word_i]):
+    #         word_i += 1
+    #         word_char_i = 0
+    #     if word_i == len(words):
+    #         break
+    #     if text[text_i] ==  words[word_i][word_char_i]:
+    #         word_to_indices[word_i].append(text_i)
+    #         word_char_i += 1
+    #     text_i += 1
+
+    # n_grams = []
+    # intervals = []
+    # for i in range(0, len(words)-n+1):
+    #     grams = words[i:i+n]
+    #     text_char_begin = word_to_indices[i][0]
+    #     text_char_end = word_to_indices[i+n-1][-1]
+    #     n_gram = text[text_char_begin: text_char_end+1]
+    #     n_grams.append(n_gram)
+    #     intervals.append((text_char_begin, text_char_end+1))       
 
     n_grams = []
     intervals = []
-    for i in range(0, len(words)-n+1):
-        grams = words[i:i+n]
-        text_char_begin = word_to_indices[i][0]
-        text_char_end = word_to_indices[i+n-1][-1]
-        n_gram = text[text_char_begin: text_char_end+1]
+    for i in range(0, len(spans)-n+1):
+        text_char_begin = spans[i][0]
+        text_char_end = spans[i+n-1][1]
+        n_gram = text[text_char_begin: text_char_end]
         n_grams.append(n_gram)
-        intervals.append((text_char_begin, text_char_end+1))       
+        intervals.append((text_char_begin, text_char_end))
 
     return n_grams, intervals    
 
