@@ -298,7 +298,7 @@ def print_as_turtle(mappings, output_filename):
         ont_prefix_to_uri = json.load(f)
 
     g = rdflib.Graph()
-    ddbjont = rdflib.Namespace("http://ddbj.nig.ac.jp/ontology/biosample/")
+    ddbjont = rdflib.Namespace("http://ddbj.nig.ac.jp/ontologies/biosample/")
     schema  = rdflib.Namespace("http://schema.org/")
     provo   = rdflib.Namespace("http://www.w3.org/ns/prov#")
     rdf     = rdflib.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
