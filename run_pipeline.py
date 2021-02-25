@@ -335,7 +335,7 @@ def print_as_turtle(mappings, output_filename):
                rdflib.Literal(sample["sample-type confidence"],
                               datatype=xsd["decimal"])))
         g.add((sample_type_uri, provo["wasAttributedTo"],
-               ddbjont["BioSamplePlusPipeline"]))
+               ddbjont["BioSamplePlusAnnotation"]))
         for mot in sample["mapped ontology terms"]:
             term_uri_prefix = ont_prefix_to_uri[mot["term_id"].split(":")[0]]
             mapped_term_uri = rdflib.URIRef(term_uri_prefix + mot["term_id"].replace(":", "_"))
@@ -345,7 +345,7 @@ def print_as_turtle(mappings, output_filename):
             g.add((property_value_uri, schema["valueReference"],
                    mapped_term_uri))
             g.add((property_value_uri, provo["wasAttributedTo"],
-                   ddbjont["BioSamplePlusPipeline"]))
+                   ddbjont["BioSamplePlusAnnotation"]))
 
         for rvp in sample["real-value properties"]:
             rvp_value = rvp["value"]
@@ -353,7 +353,7 @@ def print_as_turtle(mappings, output_filename):
             # property_value_uri = rdflib.URIRef(
             #     sample_uri_str + "#" + urllib.parse.quote(rvp["original_key"]))
             g.add((property_value_uri, provo["wasAttributedTo"],
-                   ddbjont["BioSamplePlusPipeline"]))
+                   ddbjont["BioSamplePlusAnnotation"]))
             if rvp["unit_id"] == "missing":
                 g.add((property_value_uri, schema["valueReference"],
                        rdflib.Literal(rvp_value, datatype=xsd["decimal"])))
