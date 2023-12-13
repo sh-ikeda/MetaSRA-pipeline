@@ -83,6 +83,9 @@ def main():
                 for val in tag_to_val["characteristics"][k]:
                     if len(val["text"]) < 100:
                         vals.append(val["text"])
+                    # else:
+                    #     print(entry)
+                    #     print(k, val["text"])
                 if len(vals) != 0:
                     entry[k] = vals
             tag_to_vals.append(entry)
@@ -94,17 +97,6 @@ def main():
     ct = datetime.datetime.now()
     sys.stderr.write('[{}] Initializing pipeline.\n'.format(ct))
     # dill.load_session(init_dill)
-    ont_name_to_ont_id = {
-        "UBERON": "12",
-        "CL": "1",
-        "DOID": "2",
-        "EFO": "16",
-        "CVCL": "4",
-        "ORDO": "19",
-        "UBERON_all": "5",
-        "UO": "7",
-        "EFO_all": "9"
-    }
     with open(init_dill, "rb") as f:
         # vars = dill.load(f)
         vars = pickle.load(f)
