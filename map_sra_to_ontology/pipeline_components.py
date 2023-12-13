@@ -172,6 +172,7 @@ class Pipeline:
             print("------------------------\n")
 
         mapped_terms, real_value_properties = self.extract_mapped_terms(tm_graph)
+        # tm_graph.print_as_blitz()
         return mapped_terms, real_value_properties, covered_query_map
 
     # def run_mp(self, np, tag_to_vals):

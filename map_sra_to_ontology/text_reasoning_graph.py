@@ -308,8 +308,49 @@ class TextReasoningGraph:
     
     @property
     def mapping_target_nodes(self):
-        return self.ontology_term_nodes.union(self.custom_mapping_target_nodes)   
- 
+        return self.ontology_term_nodes.union(self.custom_mapping_target_nodes)
+
+    def print_as_blitz(self):
+        r_str = ""
+        node_id = {}
+        i = 0
+        for kv_node in self.key_val_nodes:
+            i += 1
+            node_id[f"{kv_node}"] = f"{i}"
+            r_str += f"\"{i}\" :kv_node name:\"{kv_node.key}: {kv_node.value}\"\n"
+        for tok_node in self.token_nodes:
+            i += 1
+            node_id[f"{tok_node}"] = f"{i}"
+            r_str += f"\"{i}\" :tok_node name:\"{tok_node.token_str}\"\n"
+        for ont_node in self.ontology_term_nodes:
+            i += 1
+            node_id[f"{ont_node}"] = f"{i}"
+            r_str += f"\"{i}\" :ont_node name:\"{ont_node.term_id}\" \n"
+        for rv_node in self.real_value_nodes:
+            i += 1
+            node_id[f"{rv_node}"] = f"{i}"
+            r_str += f"\"{i}\" :rv_node name:\"{rv_node.value}\"\n"
+        for cmt_node in self.custom_mapping_target_nodes:
+            i += 1
+            node_id[f"{cmt_node}"] = f"{i}"
+            r_str += f"\"{i}\" :cmt_node name:\"{cmt_node.rep_str}\"\n"
+        # breakpoint()
+        for node_source, etype_to_node in self.forward_edges.items():
+            for edge, node_targets in etype_to_node.items():
+                source_id = node_id[f"{node_source}"]
+                edge_label = ""
+                if isinstance(edge, Inference):
+                    edge_label = edge.inference_type
+                elif isinstance(edge, FuzzyStringMatch):
+                    edge_label = edge.matched_str
+                elif isinstance(edge, DerivesInto):
+                    edge_label = edge.derivation_type
+                for node_target in node_targets:
+                    target_id = node_id[f"{node_target}"]
+                    r_str += f"\"{source_id}\" -> \"{target_id}\" :{type(edge).__name__} name:\"{edge_label}\"\n"
+        print(r_str)
+        return
+
     def __str__(self):
         try:
             r_str = "key-value nodes:\n"  
