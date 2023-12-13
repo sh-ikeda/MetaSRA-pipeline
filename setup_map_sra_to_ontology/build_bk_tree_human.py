@@ -7,16 +7,16 @@ import json
 import pickle
 from collections import defaultdict
 
+
 def main():
-    
     og_ids = [
-        "1", 
-        "2", 
-        "18", # Cellosaurus with relavent terms for human biology 
-        "5", 
-        "7", 
+        "1",
+        "2",
+        "18",  # Cellosaurus with relavent terms for human biology
+        "5",
+        "7",
         "9",
-        "19"
+        "19",
     ]
     ogs = [load_ontology.load(x)[0] for x in og_ids]
     str_to_terms = defaultdict(lambda: [])
@@ -39,9 +39,8 @@ def main():
         pickle.dump(bk_tree, f)
 
     with open("fuzzy_match_string_data.json", "w") as f:
-        f.write(json.dumps(str_to_terms, indent=4, separators=(',', ': ')))
+        f.write(json.dumps(str_to_terms, indent=4, separators=(",", ": ")))
 
 
 if __name__ == "__main__":
-    main() 
-
+    main()

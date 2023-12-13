@@ -9,6 +9,7 @@ import json
 import map_sra_to_ontology
 from map_sra_to_ontology import load_ontology
 
+
 def main():
     uncaps_id_to_syns = uncaps_EFO_syns()
     cvcl_id_to_syns = efo_cvcl_syns()
@@ -18,7 +19,12 @@ def main():
         term_id_to_syns[t_id] += syns
 
     with open("term_to_extra_synonyms.json", "w") as f:
-        f.write(json.dumps(term_id_to_syns, indent=4, sort_keys=True, separators=(',', ': ')))
+        f.write(
+            json.dumps(
+                term_id_to_syns, indent=4, sort_keys=True, separators=(",", ": ")
+            )
+        )
+
 
 def efo_cvcl_syns():
     """
@@ -35,7 +41,6 @@ def efo_cvcl_syns():
     c = 1
     term_id_to_syns = defaultdict(lambda: [])
     for term in og.get_mappable_terms():
-
         print("Adding synonyms to term %d/%d with id %s" % (c, total_terms, term.id))
         c += 1
         for syn_set in syn_sets:
@@ -46,17 +51,23 @@ def efo_cvcl_syns():
             for c_str in current_term_strs:
                 if c_str in syn_set:
                     for syn in syn_set:
-                        if syn not in current_term_strs and syn not in set(term_id_to_syns[term.id]):
-                            print("Added synonym %s to term with name %s" % (syn, term.name))
+                        if syn not in current_term_strs and syn not in set(
+                            term_id_to_syns[term.id]
+                        ):
+                            print(
+                                "Added synonym %s to term with name %s"
+                                % (syn, term.name)
+                            )
                             term_id_to_syns[term.id].append(syn)
     return term_id_to_syns
+
 
 def uncaps_EFO_syns():
     """
     For all synonyms in the EFO, check if the first character is
     upper case (and only the first character). If so, convert to
     lower case.
-    """    
+    """
 
     def uncap_str(r_str):
         tokens = r_str.split()
@@ -80,7 +91,6 @@ def uncaps_EFO_syns():
     og, x, y = load_ontology.load("9")
     term_id_to_syns = defaultdict(lambda: [])
     for term in list(og.id_to_term.values()):
-        
         print("Looking at term %s" % term.id)
 
         # Names of term
@@ -92,9 +102,10 @@ def uncaps_EFO_syns():
             new_str = uncap_str(r_str)
             if new_str not in ref_strs:
                 print("Derived '%s' from '%s'" % (new_str, r_str))
-                term_id_to_syns[term.id].append(new_str) 
-        
-    return term_id_to_syns 
+                term_id_to_syns[term.id].append(new_str)
+
+    return term_id_to_syns
+
 
 if __name__ == "__main__":
     main()

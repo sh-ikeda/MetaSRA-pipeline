@@ -16,6 +16,7 @@ from map_sra_to_ontology.pipeline_components import *
 
 INCLUDED_ONTOLOGIES = ["CL", "DOID", "UBERON"]
 
+
 def build_pipeline():
     """
     Improvement: Added stage TermArtifactCombinations_Stage
@@ -39,10 +40,10 @@ def build_pipeline():
     real_val = ExtractRealValue_Stage()
     match_cust_targs = ExactMatchCustomTargets_Stage()
     cust_conseq = CustomConsequentTerms_Stage()
-    delimit_plus = Delimit_Stage('+')
-    delimit_underscore = Delimit_Stage('_')
-    delimit_dash = Delimit_Stage('-')
-    delimit_slash = Delimit_Stage('/')
+    delimit_plus = Delimit_Stage("+")
+    delimit_underscore = Delimit_Stage("_")
+    delimit_dash = Delimit_Stage("-")
+    delimit_slash = Delimit_Stage("/")
     block_cell_line_key = BlockCellLineNonCellLineKey_Stage()
     subphrase_linked = RemoveSubIntervalOfMatchedBlockAncestralLink_Stage()
     cellline_to_implied_disease = CellLineToImpliedDisease_Stage()
@@ -55,9 +56,9 @@ def build_pipeline():
             "7",
             "8",
             "9",
-            "18" # Cellosaurus restricted to human cell lines
+            "18",  # Cellosaurus restricted to human cell lines
         ],
-        query_len_thresh=3
+        query_len_thresh=3,
     )
     fuzzy_match = FuzzyStringMatching_Stage(0.1, query_len_thresh=3)
     two_char_match = TwoCharMappings_Stage()
@@ -95,6 +96,6 @@ def build_pipeline():
         infer_cell_line,
         infer_dev_stage,
         cell_culture,
-        prioritize_exact
+        prioritize_exact,
     ]
     return Pipeline(stages, defaultdict(lambda: 1.0))

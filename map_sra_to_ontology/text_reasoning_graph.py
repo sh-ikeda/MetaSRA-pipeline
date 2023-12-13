@@ -4,6 +4,7 @@
 
 
 from optparse import OptionParser
+
 # from sets import Set
 from collections import defaultdict, deque
 import sys
@@ -12,6 +13,7 @@ try:
     import pygraphviz as pgv
 except:
     print("Unable to import pygraphviz. Visualization is disabled.", file=sys.stderr)
+
 
 class EEdge(object):
     def __init__(self, weight):
@@ -36,19 +38,17 @@ class Inference(EEdge):
         return hash(("INFERENCE", (self.inference_type)))
 
     def __str__(self):
-        return "Inference(weight=%f, inference_type='%s')" % (self.weight, self.inference_type)
+        return "Inference(weight=%f, inference_type='%s')" % (
+            self.weight,
+            self.inference_type,
+        )
 
     def __repr__(self):
         return self.__str__()
 
+
 class FuzzyStringMatch(EEdge):
-    def __init__(
-        self, 
-        query_str, 
-        matched_str, 
-        match_target, 
-        edit_dist
-    ):
+    def __init__(self, query_str, matched_str, match_target, edit_dist):
         """
         Args:
             match_target: describes the aspect/field of the target
@@ -64,9 +64,11 @@ class FuzzyStringMatch(EEdge):
 
     def __eq__(self, other):
         if isinstance(other, FuzzyStringMatch):
-            if self.query_str == other.query_str \
-                and self.matched_str == other.matched_str \
-                and self.match_target == other.match_target: # weight should be determined by edit-distance 
+            if (
+                self.query_str == other.query_str
+                and self.matched_str == other.matched_str
+                and self.match_target == other.match_target
+            ):  # weight should be determined by edit-distance
                 return True
         return False
 
@@ -74,28 +76,29 @@ class FuzzyStringMatch(EEdge):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((
-            "FUZZY_STRING_MATCH", 
+        return hash(
             (
-                self.query_str, 
-                self.matched_str,  
-                self.match_target, 
-                self.edit_dist
+                "FUZZY_STRING_MATCH",
+                (self.query_str, self.matched_str, self.match_target, self.edit_dist),
             )
-        )) 
+        )
 
     def __str__(self):
-        return "FuzzyStringMatch(weight=%f, query_str='%s', matched_str='%s', match_target='%s', edit_dist=%d)" % (
-            self.weight, 
-            #self.query_str.decode('utf-8', 'replace'), 
-            self.query_str,
-            self.matched_str, 
-            self.match_target, 
-            self.edit_dist
+        return (
+            "FuzzyStringMatch(weight=%f, query_str='%s', matched_str='%s', match_target='%s', edit_dist=%d)"
+            % (
+                self.weight,
+                # self.query_str.decode('utf-8', 'replace'),
+                self.query_str,
+                self.matched_str,
+                self.match_target,
+                self.edit_dist,
+            )
         )
 
     def __repr__(self):
         return self.__str__()
+
 
 class DerivesInto(EEdge):
     def __init__(self, derivation_type):
@@ -105,7 +108,9 @@ class DerivesInto(EEdge):
 
     def __eq__(self, other):
         if isinstance(other, DerivesInto):
-            if self.derivation_type == other.derivation_type: # weight should be determined by derivation type
+            if (
+                self.derivation_type == other.derivation_type
+            ):  # weight should be determined by derivation type
                 return True
         return False
 
@@ -114,21 +119,25 @@ class DerivesInto(EEdge):
 
     def __hash__(self):
         return hash(("FUZZY_STRING_MATCH", (self.derivation_type)))
-           
+
     def __str__(self):
-        return "DerivesInto(weight=%f, derivation_type='%s')" % (self.weight, self.derivation_type)
-    
+        return "DerivesInto(weight=%f, derivation_type='%s')" % (
+            self.weight,
+            self.derivation_type,
+        )
+
     def __repr__(self):
         return self.__str__()
- 
+
 
 class ENode(object):
     def __init__(self):
         pass
 
+
 class KeyValueNode(ENode):
     def __init__(self, key, value):
-        super(KeyValueNode, self).__init__() 
+        super(KeyValueNode, self).__init__()
         self.key = key
         self.value = value
 
@@ -137,7 +146,7 @@ class KeyValueNode(ENode):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-    
+
     def __hash__(self):
         return hash(("KEY_VALUE_NODE", (self.key, self.value)))
 
@@ -146,7 +155,6 @@ class KeyValueNode(ENode):
 
     def __repr__(self):
         return self.__str__()
-
 
 
 class TokenNode(ENode):
@@ -158,9 +166,11 @@ class TokenNode(ENode):
 
     def __eq__(self, other):
         if isinstance(other, TokenNode):
-            if self.token_str == other.token_str \
-                and self.origin_gram_start == other.origin_gram_start \
-                and self.origin_gram_end == other.origin_gram_end:
+            if (
+                self.token_str == other.token_str
+                and self.origin_gram_start == other.origin_gram_start
+                and self.origin_gram_end == other.origin_gram_end
+            ):
                 return True
         return False
 
@@ -168,31 +178,27 @@ class TokenNode(ENode):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((
-            "TOKEN_NODE", 
+        return hash(
             (
-                self.token_str, 
-                self.origin_gram_start, 
-                self.origin_gram_end
+                "TOKEN_NODE",
+                (self.token_str, self.origin_gram_start, self.origin_gram_end),
             )
-        ))
+        )
 
     def __str__(self):
         return "TokenNode(token_str='%s', origin_gram_start=%d, origin_gram_end=%d)" % (
-            self.token_str, 
-            self.origin_gram_start, 
-            self.origin_gram_end
+            self.token_str,
+            self.origin_gram_start,
+            self.origin_gram_end,
         )
 
     def __repr__(self):
         return self.__str__()
 
 
-
 class MappingTargetNode(ENode):
-     def __init__(self):
+    def __init__(self):
         super(MappingTargetNode, self).__init__()
-
 
 
 class CustomMappingTargetNode(MappingTargetNode):
@@ -216,7 +222,6 @@ class CustomMappingTargetNode(MappingTargetNode):
         return self.__str__()
 
 
-
 class OntologyTermNode(MappingTargetNode):
     def __init__(self, term_id):
         super(OntologyTermNode, self).__init__()
@@ -224,19 +229,19 @@ class OntologyTermNode(MappingTargetNode):
 
     def __eq__(self, other):
         return hash(self) == hash(other)
-    
+
     def __ne__(self, other):
-        return not self.__eq__(other) 
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(("ONTOLOGY_TERM_NODE", (self.term_id)))
-    
+
     def __str__(self):
         return "OntologyTermNode(term_id='%s')" % self.term_id
-    
+
     def __repr__(self):
         return self.__str__()
-    
+
     def namespace(self):
         return self.term_id.split(":")[0]
 
@@ -257,7 +262,10 @@ class OntologyTermNode_OLD(MappingTargetNode):
         return hash(("ONTOLOGY_TERM_NODE", (self.term_id, self.consequent)))
 
     def __str__(self):
-        return "OntologyTermNode(term_id='%s', consequent=%s)" % (self.term_id, str(self.consequent))
+        return "OntologyTermNode(term_id='%s', consequent=%s)" % (
+            self.term_id,
+            str(self.consequent),
+        )
 
     def __repr__(self):
         return self.__str__()
@@ -280,18 +288,21 @@ class RealValuePropertyNode(ENode):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash(("RealValuePropertyNode", (self.property_term_id, self.value, self.unit_term_id)))
+        return hash(
+            (
+                "RealValuePropertyNode",
+                (self.property_term_id, self.value, self.unit_term_id),
+            )
+        )
 
     def __str__(self):
-        return "RealValuePropertyNode(property_term_id='%s', value=%f, unit_term_id='%s')" % (
-            self.property_term_id, 
-            self.value, 
-            self.unit_term_id
+        return (
+            "RealValuePropertyNode(property_term_id='%s', value=%f, unit_term_id='%s')"
+            % (self.property_term_id, self.value, self.unit_term_id)
         )
 
     def __repr__(self):
         return self.__str__()
-
 
 
 class TextReasoningGraph:
@@ -301,11 +312,10 @@ class TextReasoningGraph:
         self.ontology_term_nodes = set()
         self.custom_mapping_target_nodes = set()
         self.real_value_nodes = set()
-        self.forward_edges = defaultdict(lambda: defaultdict(lambda: set())) 
-        self.reverse_edges = defaultdict(lambda: defaultdict(lambda: set()))    
+        self.forward_edges = defaultdict(lambda: defaultdict(lambda: set()))
+        self.reverse_edges = defaultdict(lambda: defaultdict(lambda: set()))
         self.prohibit_cycles = prohibit_cycles
 
-    
     @property
     def mapping_target_nodes(self):
         return self.ontology_term_nodes.union(self.custom_mapping_target_nodes)
@@ -317,23 +327,23 @@ class TextReasoningGraph:
         for kv_node in self.key_val_nodes:
             i += 1
             node_id[f"{kv_node}"] = f"{i}"
-            r_str += f"\"{i}\" :kv_node name:\"{kv_node.key}: {kv_node.value}\"\n"
+            r_str += f'"{i}" :kv_node name:"{kv_node.key}: {kv_node.value}"\n'
         for tok_node in self.token_nodes:
             i += 1
             node_id[f"{tok_node}"] = f"{i}"
-            r_str += f"\"{i}\" :tok_node name:\"{tok_node.token_str}\"\n"
+            r_str += f'"{i}" :tok_node name:"{tok_node.token_str}"\n'
         for ont_node in self.ontology_term_nodes:
             i += 1
             node_id[f"{ont_node}"] = f"{i}"
-            r_str += f"\"{i}\" :ont_node name:\"{ont_node.term_id}\" \n"
+            r_str += f'"{i}" :ont_node name:"{ont_node.term_id}" \n'
         for rv_node in self.real_value_nodes:
             i += 1
             node_id[f"{rv_node}"] = f"{i}"
-            r_str += f"\"{i}\" :rv_node name:\"{rv_node.value}\"\n"
+            r_str += f'"{i}" :rv_node name:"{rv_node.value}"\n'
         for cmt_node in self.custom_mapping_target_nodes:
             i += 1
             node_id[f"{cmt_node}"] = f"{i}"
-            r_str += f"\"{i}\" :cmt_node name:\"{cmt_node.rep_str}\"\n"
+            r_str += f'"{i}" :cmt_node name:"{cmt_node.rep_str}"\n'
         # breakpoint()
         for node_source, etype_to_node in self.forward_edges.items():
             for edge, node_targets in etype_to_node.items():
@@ -347,32 +357,32 @@ class TextReasoningGraph:
                     edge_label = edge.derivation_type
                 for node_target in node_targets:
                     target_id = node_id[f"{node_target}"]
-                    r_str += f"\"{source_id}\" -> \"{target_id}\" :{type(edge).__name__} name:\"{edge_label}\"\n"
+                    r_str += f'"{source_id}" -> "{target_id}" :{type(edge).__name__} name:"{edge_label}"\n'
         print(r_str)
         return
 
     def __str__(self):
         try:
-            r_str = "key-value nodes:\n"  
+            r_str = "key-value nodes:\n"
             for kv_node in self.key_val_nodes:
                 r_str += "%s\n" % kv_node
             r_str += "\ntoken nodes:\n"
             for tok_node in self.token_nodes:
                 r_str += "%s\n" % tok_node
-            r_str += "\nontology term nodes:\n"    
+            r_str += "\nontology term nodes:\n"
             for ont_node in self.ontology_term_nodes:
-                r_str += "%s\n" % ont_node   
+                r_str += "%s\n" % ont_node
             r_str += "\nreal-value property nodes:\n"
             for rv_node in self.real_value_nodes:
                 r_str += "%s\n" % rv_node
             r_str += "\ncustom mapping target nodes:\n"
             for cmt_node in self.custom_mapping_target_nodes:
-                r_str += "%s\n" % cmt_node 
+                r_str += "%s\n" % cmt_node
 
             r_str += "\nforward_edges:\n"
             for node_source, etype_to_node in self.forward_edges.items():
                 for edge, node_target in etype_to_node.items():
-                    r_str += "%s %s %s\n" % (node_source, edge, node_target) 
+                    r_str += "%s %s %s\n" % (node_source, edge, node_target)
 
             r_str += "\nreverse_edges:\n"
             for node_source, etype_to_node in self.reverse_edges.items():
@@ -381,33 +391,39 @@ class TextReasoningGraph:
             return r_str
         except UnicodeDecodeError:
             print("Unicode decode error. Error converting graph to string...")
-            return "" 
-        
-   
-    def graphviz(self, root_id=None):
-        g = pgv.AGraph(directed='True')               
-        
-        for o_node in self.ontology_term_nodes:
-            g.add_node(o_node.term_id, shape='polygon')
+            return ""
 
-            #g.add_edge(self.id_to_term[curr_id].name, self.id_to_term[sub_id].name)
+    def graphviz(self, root_id=None):
+        g = pgv.AGraph(directed="True")
+
+        for o_node in self.ontology_term_nodes:
+            g.add_node(o_node.term_id, shape="polygon")
+
+            # g.add_edge(self.id_to_term[curr_id].name, self.id_to_term[sub_id].name)
         return str(g)
- 
+
     def add_node(self, node):
         if isinstance(node, TokenNode):
             if node not in self.token_nodes:
                 self.token_nodes.add(node)
         elif isinstance(node, KeyValueNode) and node not in self.key_val_nodes:
             self.key_val_nodes.add(node)
-        elif isinstance(node, OntologyTermNode) and node not in self.ontology_term_nodes:
+        elif (
+            isinstance(node, OntologyTermNode) and node not in self.ontology_term_nodes
+        ):
             self.ontology_term_nodes.add(node)
-        elif isinstance(node, CustomMappingTargetNode) and node not in self.custom_mapping_target_nodes:
+        elif (
+            isinstance(node, CustomMappingTargetNode)
+            and node not in self.custom_mapping_target_nodes
+        ):
             self.custom_mapping_target_nodes.add(node)
-        elif isinstance(node, RealValuePropertyNode) and node not in self.real_value_nodes:
-            self.real_value_nodes.add(node)       
- 
-    def delete_node(self, node):
+        elif (
+            isinstance(node, RealValuePropertyNode)
+            and node not in self.real_value_nodes
+        ):
+            self.real_value_nodes.add(node)
 
+    def delete_node(self, node):
         if node in self.token_nodes:
             self.token_nodes.remove(node)
         if node in self.key_val_nodes:
@@ -437,8 +453,6 @@ class TextReasoningGraph:
             for e in del_edges:
                 self.delete_edge(e[0], e[1], e[2])
 
-
-
     def delete_edge(self, node_a, node_b, edge):
         """
         Delete an edge from one node to another.
@@ -447,30 +461,38 @@ class TextReasoningGraph:
             node_b: the target node
             edge: the edge type between node_a and node_b to be removed
         """
-        if node_a in self.forward_edges and edge in self.forward_edges[node_a] and node_b in self.forward_edges[node_a][edge]:
+        if (
+            node_a in self.forward_edges
+            and edge in self.forward_edges[node_a]
+            and node_b in self.forward_edges[node_a][edge]
+        ):
             self.forward_edges[node_a][edge].remove(node_b)
             if len(self.forward_edges[node_a][edge]) == 0:
-                del self.forward_edges[node_a][edge]        
-            if len(self.forward_edges[node_a]) == 0:  
+                del self.forward_edges[node_a][edge]
+            if len(self.forward_edges[node_a]) == 0:
                 del self.forward_edges[node_a]
-        
+
             self.reverse_edges[node_b][edge].remove(node_a)
             if len(self.reverse_edges[node_b][edge]) == 0:
                 del self.reverse_edges[node_b][edge]
             if len(self.reverse_edges[node_b]) == 0:
                 del self.reverse_edges[node_b]
-#        else:
-#            print "Warning! Could not delete edge %s -- %s --> %s" % (node_a, edge, node_b)
-#            print "node_a=%s in self.forward_edges=? %s" % (node_a, (node_a in self.forward_edges))
-#            print "%s in self.forward_edges[node_a]? %s" % (edge, (edge in self.forward_edges[node_a]))
-#            print "node_b=%s in self.forward_edges[node_a][edge]? %s" % (node_b, (node_b in self.forward_edges[node_a][edge]))
-        
+
+    #        else:
+    #            print "Warning! Could not delete edge %s -- %s --> %s" % (node_a, edge, node_b)
+    #            print "node_a=%s in self.forward_edges=? %s" % (node_a, (node_a in self.forward_edges))
+    #            print "%s in self.forward_edges[node_a]? %s" % (edge, (edge in self.forward_edges[node_a]))
+    #            print "node_b=%s in self.forward_edges[node_a][edge]? %s" % (node_b, (node_b in self.forward_edges[node_a][edge]))
+
     def add_edge(self, node_a, node_b, edge):
         if self.prohibit_cycles:
             self._add_edge(node_a, node_b, edge)
             if self.is_cycle_present():
                 self.delete_edge(node_a, node_b, edge)
-                print("Warning! Adding edge %s -- %s --> %s causes a cycle. Edge was not created." % (node_a, edge, node_b))
+                print(
+                    "Warning! Adding edge %s -- %s --> %s causes a cycle. Edge was not created."
+                    % (node_a, edge, node_b)
+                )
         else:
             self._add_edge(node_a, node_b, edge)
 
@@ -478,12 +500,18 @@ class TextReasoningGraph:
         self.add_node(node_a)
         self.add_node(node_b)
 
-        if node_a != node_b: # No self-loops
+        if node_a != node_b:  # No self-loops
             self.forward_edges[node_a][edge].add(node_b)
-            self.reverse_edges[node_b][edge].add(node_a) 
+            self.reverse_edges[node_b][edge].add(node_a)
 
     def all_nodes(self):
-        return set(self.token_nodes).union(self.key_val_nodes).union(self.ontology_term_nodes).union(self.real_value_nodes).union(self.custom_mapping_target_nodes)
+        return (
+            set(self.token_nodes)
+            .union(self.key_val_nodes)
+            .union(self.ontology_term_nodes)
+            .union(self.real_value_nodes)
+            .union(self.custom_mapping_target_nodes)
+        )
 
     def get_children(self, node):
         children = set()
@@ -499,30 +527,31 @@ class TextReasoningGraph:
         Implements Dijkstra's algorithm.
         """
 
-        # If using reverse edges, then we are looking at the shortest way of 
+        # If using reverse edges, then we are looking at the shortest way of
         # of getting ~to~ the "source" rather than going from the source.
         if use_reverse_edges:
             cons_edges = self.reverse_edges
         else:
             cons_edges = self.forward_edges
 
-        dist = {}       # maps node to shortest distance to source
-        prev = {}       # maps node to (next node, edge type) tuple needed to reach source through shortest path
-        queue = []      # queue of nodes with current estimated distance to source
-        in_q = set()    # stores all nodes in the queue
+        dist = {}  # maps node to shortest distance to source
+        prev = (
+            {}
+        )  # maps node to (next node, edge type) tuple needed to reach source through shortest path
+        queue = []  # queue of nodes with current estimated distance to source
+        in_q = set()  # stores all nodes in the queue
 
-
-        # Initialization 
-        for node  in self.all_nodes():
+        # Initialization
+        for node in self.all_nodes():
             if node == source_node:
                 dist[node] = 0.0
                 queue.append((node, 0.0))
                 in_q.add(node)
             else:
-                dist[node] = float('inf')
-                queue.append((node, float('inf')))
+                dist[node] = float("inf")
+                queue.append((node, float("inf")))
                 in_q.add(node)
-    
+
         # Run Dijkstra's algorithm
         while len(queue) > 0:
             queue = sorted(queue, key=lambda x: x[1])
@@ -532,9 +561,9 @@ class TextReasoningGraph:
             # Remove element from queue
             queue = queue[1:]
             try:
-                in_q.remove(node)  
+                in_q.remove(node)
             except KeyError:
-                pass # TODO this is bad practice. Should output to a log
+                pass  # TODO this is bad practice. Should output to a log
 
             for edge, targ_nodes in cons_edges[node].items():
                 for targ_node in targ_nodes:
@@ -543,12 +572,12 @@ class TextReasoningGraph:
                         dist[targ_node] = alt
                         prev[targ_node] = (node, edge)
                         queue.append((targ_node, alt))
-        
-        return dist, prev 
+
+        return dist, prev
 
     def downstream_nodes(self, node, depth_first=True, exclude_edges=None):
         """
-        Depth first traversal to gather all downstream nodes in 
+        Depth first traversal to gather all downstream nodes in
         the DAG
         Args:
             exclude_edges: a set of edges that we do not want to follow
@@ -560,7 +589,6 @@ class TextReasoningGraph:
 
         q.append(node)
         while len(q) > 0:
-
             if depth_first:
                 curr_node = q.pop()
             else:
@@ -574,10 +602,10 @@ class TextReasoningGraph:
                     if exclude_edges and edge in exclude_edges:
                         continue
                     for targ_node in self.forward_edges[curr_node][edge]:
-                        #if targ_node not in set(q) and targ_node not in set(downstream):
+                        # if targ_node not in set(q) and targ_node not in set(downstream):
                         if targ_node not in set(downstream):
-                            q.append(targ_node)       
- 
+                            q.append(targ_node)
+
         return downstream
 
     def is_cycle_present(self):
@@ -590,17 +618,18 @@ class TextReasoningGraph:
                 for in_node in self.reverse_edges[node][edge]:
                     if in_node in remaining_nodes:
                         return True
-            return False 
+            return False
 
-        removed_nodes = set([x for x in self.all_nodes() if x not in self.reverse_edges])
+        removed_nodes = set(
+            [x for x in self.all_nodes() if x not in self.reverse_edges]
+        )
         remaining_nodes = self.all_nodes().difference(removed_nodes)
         deletion_occurred = True
         while deletion_occurred:
-
             deletion_occurred = False
             to_remove = set()
             for node in remaining_nodes:
-                has_in_edge = has_incoming_edge(node, removed_nodes, remaining_nodes) 
+                has_in_edge = has_incoming_edge(node, removed_nodes, remaining_nodes)
                 if not has_in_edge:
                     to_remove.add(node)
 
@@ -614,12 +643,14 @@ class TextReasoningGraph:
         else:
             return False
 
+
 def main():
     parser = OptionParser()
-    #parser.add_option("-a", "--a_descrip", action="store_true", help="This is a flat")
-    #parser.add_option("-b", "--b_descrip", help="This is an argument")
+    # parser.add_option("-a", "--a_descrip", action="store_true", help="This is a flat")
+    # parser.add_option("-b", "--b_descrip", help="This is an argument")
     (options, args) = parser.parse_args()
-    pass # TODO
+    pass  # TODO
+
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 from collections import Counter
 
+
 def bag_dist_multiset(str_a, str_b):
     count_a = Counter(str_a)
     count_b = Counter(str_b)
@@ -24,4 +25,3 @@ def bag_dist_multiset(str_a, str_b):
         return a_minus_b
     else:
         return b_minus_a
-

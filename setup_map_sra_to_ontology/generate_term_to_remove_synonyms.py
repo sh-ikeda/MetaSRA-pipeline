@@ -13,6 +13,7 @@ from collections import deque
 import map_sra_to_ontology
 from map_sra_to_ontology import load_ontology
 
+
 def main():
     og, x, y = load_ontology.load("13")
     problematic_terms = deque()
@@ -22,10 +23,15 @@ def main():
 
     term_to_syns = {}
     for term in problematic_terms:
-        term_to_syns[term.id] = {"name": term.name, "synonyms":[x.syn_str for x in term.synonyms]}
+        term_to_syns[term.id] = {
+            "name": term.name,
+            "synonyms": [x.syn_str for x in term.synonyms],
+        }
 
     with open("candidate_term_to_remove_synonyms.json", "w") as f:
-        f.write(json.dumps(term_to_syns, indent=4, sort_keys=True, separators=(',', ': ')))
+        f.write(
+            json.dumps(term_to_syns, indent=4, sort_keys=True, separators=(",", ": "))
+        )
 
 
 if __name__ == "__main__":

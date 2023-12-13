@@ -7,8 +7,8 @@ import json
 import pickle
 from collections import defaultdict
 
+
 def main():
-    
     og_ids = ["20"]
     ogs = [load_ontology.load(x)[0] for x in og_ids]
     str_to_terms = defaultdict(lambda: [])
@@ -31,9 +31,8 @@ def main():
         pickle.dump(bk_tree, f)
 
     with open("fuzzy_match_string_data_plant.json", "w") as f:
-        f.write(json.dumps(str_to_terms, indent=4, separators=(',', ': ')))
+        f.write(json.dumps(str_to_terms, indent=4, separators=(",", ": ")))
 
 
 if __name__ == "__main__":
-    main() 
-
+    main()

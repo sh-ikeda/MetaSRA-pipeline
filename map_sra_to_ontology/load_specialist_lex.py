@@ -1,5 +1,5 @@
 ###############################################################################
-#   Functionality for loading the NLM's SPECIALIST Lexicon 
+#   Functionality for loading the NLM's SPECIALIST Lexicon
 #   (https://www.nlm.nih.gov/pubs/factsheets/umlslex.html) into an in-memory
 #   a trie data structure. Allows for fast query of the lexicon.
 ###############################################################################
@@ -14,10 +14,11 @@ import pkg_resources as pr
 
 resource_package = __name__
 
+
 def main():
     # Test that module is functioning
     s = SpecialistLexicon("/scratch/mnbernstein/LEX")
-    print(s.search('tumor'))
+    print(s.search("tumor"))
 
 
 class SpecialistLexicon:
@@ -54,7 +55,6 @@ class SpecialistLexicon:
 
         self.trie = marisa_trie.RecordTrie("<i", tups)
 
-
     def search(self, query):
         mapped = []
         try:
@@ -63,7 +63,7 @@ class SpecialistLexicon:
                 eui = self.eui_array[r[0]]
                 mapped.append(eui)
         except KeyError:
-            #print "Query '%s' not in trie" % query
+            # print "Query '%s' not in trie" % query
             pass
         return mapped
 
@@ -93,6 +93,7 @@ class SpecialistLexicon:
                 noms = [x for x in self.lexicon[m]["nominalization"]]
         return noms
 
+
 def load_lexicon(lex_loc):
     lexicon = parse_LEXICON(lex_loc)
     lexicon = add_spelling_variants(lexicon)
@@ -102,17 +103,19 @@ def load_lexicon(lex_loc):
 
     return lexicon
 
-def add_trademarks(lexicon):
 
+def add_trademarks(lexicon):
     f_name = pr.resource_filename(resource_package, join("LEX", "LRTRM"))
     with open(f_name, "r") as f:
         for l in f:
-            vals = l.strip().split('|')
+            vals = l.strip().split("|")
             eui = vals[0]
             chem = vals[2]
 
             if eui not in lexicon:
-                print("WARNING! Attempt trademarks, but %s is not in the lexicon!" % eui)
+                print(
+                    "WARNING! Attempt trademarks, but %s is not in the lexicon!" % eui
+                )
                 continue
 
             if "trademark" not in lexicon[eui]:
@@ -122,16 +125,18 @@ def add_trademarks(lexicon):
 
 
 def add_nominalization(lexicon):
-
     f_name = pr.resource_filename(resource_package, join("LEX", "LRNOM"))
     with open(f_name, "r") as f:
         for l in f:
-            vals = l.strip().split('|')
+            vals = l.strip().split("|")
             eui = vals[0]
             nom = vals[1]
 
             if eui not in lexicon:
-                print("WARNING! Attempt nominalization, but %s is not in the lexicon!" % eui)
+                print(
+                    "WARNING! Attempt nominalization, but %s is not in the lexicon!"
+                    % eui
+                )
                 continue
 
             if "nominalization" not in lexicon[eui]:
@@ -141,16 +146,18 @@ def add_nominalization(lexicon):
 
 
 def add_spelling_variants(lexicon):
-
     f_name = pr.resource_filename(resource_package, join("LEX", "LRSPL"))
     with open(f_name, "r") as f:
         for l in f:
-            vals = l.strip().split('|')
+            vals = l.strip().split("|")
             eui = vals[0]
             spell_var = vals[1]
 
             if eui not in lexicon:
-                print("WARNING! Attempt spelling variant, but %s is not in the lexicon!" % eui)
+                print(
+                    "WARNING! Attempt spelling variant, but %s is not in the lexicon!"
+                    % eui
+                )
                 continue
 
             if "spelling variants" not in lexicon[eui]:
@@ -158,52 +165,55 @@ def add_spelling_variants(lexicon):
             lexicon[eui]["spelling variants"].append(spell_var)
     return lexicon
 
-def add_inflection_variants(lexicon):
 
+def add_inflection_variants(lexicon):
     f_name = pr.resource_filename(resource_package, join("LEX", "LRAGR"))
     with open(f_name, "r") as f:
         for l in f:
-            vals = l.strip().split('|')
+            vals = l.strip().split("|")
             eui = vals[0]
             infl_var = vals[1]
 
             if eui not in lexicon:
-                print("WARNING! Attempting inflection variant, %s is not in the lexicon!" % eui)
+                print(
+                    "WARNING! Attempting inflection variant, %s is not in the lexicon!"
+                    % eui
+                )
                 continue
-        
+
             if infl_var == lexicon[eui]["base"]:
                 continue
 
             if "inflection variants" not in lexicon[eui]:
                 lexicon[eui]["inflection variants"] = []
-            lexicon[eui]["inflection variants"].append(infl_var)       
+            lexicon[eui]["inflection variants"].append(infl_var)
     return lexicon
 
 
 def dd_init():
     return {}
 
-    
+
 def parse_LEXICON(lex_loc):
     def process_curr_lines(c_lines):
         if not c_lines:
-            return     
+            return
 
         entries = {}
 
         c_lines[0] = c_lines[0][1:]
         c_lines = [x.strip() for x in c_lines]
-        
+
         eui = None
         base = None
         for l in c_lines:
             if l == "}":
                 continue
-            if len(l.split('=')) < 2:
+            if len(l.split("=")) < 2:
                 continue
 
-            key = l.split('=')[0]
-            val = l.split('=')[1]
+            key = l.split("=")[0]
+            val = l.split("=")[1]
 
             if key == "entry":
                 eui = val
@@ -229,6 +239,7 @@ def parse_LEXICON(lex_loc):
         if result:
             lexicon[result[0]]["base"] = result[1]
     return lexicon
-   
+
+
 if __name__ == "__main__":
     main()

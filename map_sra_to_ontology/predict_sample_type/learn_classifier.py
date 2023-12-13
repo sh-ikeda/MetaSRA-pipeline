@@ -10,6 +10,7 @@ import sys
 import pkg_resources as pr
 from .one_vs_rest_classifier_same_features import OneVsRestClassifier
 import load_ontology
+
 resource_package = __name__
 sys.path.append(pr.resource_filename(resource_package, ".."))
 
@@ -20,12 +21,16 @@ NUM_FEATURES_PER_CLASS = 75
 DOC_FREQ_THRESH = 2
 ALGORITHM = "one_vs_rest"
 BALANCE_CLASSES = False
-N = 2 # N-gram size
+N = 2  # N-gram size
 
 TRAINING_DATA_F = "/ua/mnbernstein/projects/tbcp/metadata/ontology/validation_sets/validation_set.3-10_4-3_5-5_6-2_8-1_9-1_10-1_11-1_12-1_13-1_15-1_16-1.json"
-#TRAINING_DATA_RAW_MAPPING_F = "matches.3-10_4-3_5-5_6-2_8-1_9-1_10-1_11-1_12-1_13-1_15-1_16-1.pip41.json"
-TRAINING_DATA_RAW_MAPPING_F = "matches.3-10_4-3_5-5_6-2_8-1_9-1_10-1_11-1_12-1_13-1_15-1_16-1.pip51.json"
-STUDY_TO_SAMPLES_F = "study_to_sample.3-10_4-3_5-5_6-2_8-1_9-1_10-1_11-1_12-1_13-1_15-1_16-1.json"
+# TRAINING_DATA_RAW_MAPPING_F = "matches.3-10_4-3_5-5_6-2_8-1_9-1_10-1_11-1_12-1_13-1_15-1_16-1.pip41.json"
+TRAINING_DATA_RAW_MAPPING_F = (
+    "matches.3-10_4-3_5-5_6-2_8-1_9-1_10-1_11-1_12-1_13-1_15-1_16-1.pip51.json"
+)
+STUDY_TO_SAMPLES_F = (
+    "study_to_sample.3-10_4-3_5-5_6-2_8-1_9-1_10-1_11-1_12-1_13-1_15-1_16-1.json"
+)
 
 
 def main():
@@ -40,10 +45,7 @@ def main():
             with open(join(matches_file_dir, fname), "r") as f:
                 j = json.load(f)
                 for sample_acc, map_data in j.items():
-                    mapped_term_ids = [
-                        x["term_id"] 
-                        for x in map_data["mapped_terms"]
-                    ]
+                    mapped_term_ids = [x["term_id"] for x in map_data["mapped_terms"]]
                     term_in_onts = False
                     for term in mapped_term_ids:
                         for og in OGS:
@@ -52,10 +54,10 @@ def main():
                                 break
                     real_val_props = [
                         {
-                            "property_id": x["property_id"], 
-                            "unit_id": x["unit_id"], 
-                            "value": x["value"]
-                        } 
+                            "property_id": x["property_id"],
+                            "unit_id": x["unit_id"],
+                            "value": x["value"],
+                        }
                         for x in map_data["real_value_properties"]
                     ]
                     sample_to_real_val_props[sample_acc] = real_val_props
@@ -65,10 +67,7 @@ def main():
                 for og in OGS:
                     for term in predicted_terms:
                         sup_terms.update(
-                            og.recursive_relationship(
-                                term, 
-                                ['is_a', 'part_of']
-                            )
+                            og.recursive_relationship(term, ["is_a", "part_of"])
                         )
                 sample_to_predicted_terms[sample_acc].update(sup_terms)
         return sample_to_predicted_terms, sample_to_real_val_props
@@ -79,40 +78,32 @@ def main():
             val_data = json.load(f)
             for v in val_data["annotated_samples"]:
                 if v["sample_type"] != "TODO":
-                    data_set.append((
-                        v["attributes"], 
-                        v["sample_type"], 
-                        v["sample_accession"]
-                    ))
+                    data_set.append(
+                        (v["attributes"], v["sample_type"], v["sample_accession"])
+                    )
         return data_set
 
     parser = OptionParser()
     (options, args) = parser.parse_args()
 
     # Determine which samples should be in the training set
-    with open(STUDY_TO_SAMPLES_F, 'r') as f:
+    with open(STUDY_TO_SAMPLES_F, "r") as f:
         study_to_samples = json.load(f)
-    train_samples = set([
-        sorted(v)[0] 
-        for v in list(study_to_samples.values())
-    ])
+    train_samples = set([sorted(v)[0] for v in list(study_to_samples.values())])
     print("Test samples are: %s" % train_samples)
 
     # Build train dataset
     train_dataset = get_dataset(TRAINING_DATA_F)
     print("Initially %d samples in training set" % len(train_dataset))
     train_dataset = [
-            x 
-            for x in train_dataset 
-            if x[2] in train_samples 
-            and x[1] != "other"
+        x for x in train_dataset if x[2] in train_samples and x[1] != "other"
     ]
 
     # Build sample to predicted terms and real-value properties
-    sample_to_predicted_terms_train, sample_to_real_val_props_train = get_samples_to_mappings(
-        TRAINING_DATA_RAW_MAPPING_F, 
-        OGS
-    )
+    (
+        sample_to_predicted_terms_train,
+        sample_to_real_val_props_train,
+    ) = get_samples_to_mappings(TRAINING_DATA_RAW_MAPPING_F, OGS)
 
     # Build sample to n-grams
     sample_to_ngrams = get_samples_to_ngram(train_dataset)
@@ -124,7 +115,7 @@ def main():
         num_features_per_class=NUM_FEATURES_PER_CLASS,
         doc_freq_thresh=DOC_FREQ_THRESH,
         balance_classes=BALANCE_CLASSES,
-        cvcl_og=OGS[4]
+        cvcl_og=OGS[4],
     )
 
     print("Writing trained model to dilled files...")
@@ -135,15 +126,15 @@ def main():
     print("Finished writing trained model to dilled files.")
 
 
-
 class FeatureConverter:
-
     def __init__(self, ngram_vec_scaffold, term_vec_scaffold):
         self.ngram_vec_scaffold = ngram_vec_scaffold
         self.term_vec_scaffold = term_vec_scaffold
 
     def convert_to_features(self, n_grams, terms):
-        feature_vec = np.zeros(len(self.ngram_vec_scaffold) + len(self.term_vec_scaffold))
+        feature_vec = np.zeros(
+            len(self.ngram_vec_scaffold) + len(self.term_vec_scaffold)
+        )
         c = Counter(n_grams)
         for i, feat in enumerate(self.ngram_vec_scaffold):
             if feat in c:
@@ -157,14 +148,14 @@ class FeatureConverter:
 
 
 def learn_model(
-        training_set, 
-        sample_to_ngrams, 
-        sample_to_predicted_terms, 
-        num_features_per_class, 
-        doc_freq_thresh, 
-        balance_classes, 
-        cvcl_og
-    ):
+    training_set,
+    sample_to_ngrams,
+    sample_to_predicted_terms,
+    num_features_per_class,
+    doc_freq_thresh,
+    balance_classes,
+    cvcl_og,
+):
     """
     Args:
         training_set: list of tuples where first element of tuple is a dictionary of
@@ -174,12 +165,7 @@ def learn_model(
     labels = []
     sample_accs = []
 
-    label_freqs = Counter(
-        [
-            t[1] 
-            for t in training_set
-        ]
-    )
+    label_freqs = Counter([t[1] for t in training_set])
     print(label_freqs)
 
     for t in training_set:
@@ -188,36 +174,27 @@ def learn_model(
         sample_accs.append(t[2])
 
     ngram_vec_scaffold = ngram_features(
-        sample_attributes, 
-        sample_accs, 
-        sample_to_ngrams, 
-        doc_freq_thresh
+        sample_attributes, sample_accs, sample_to_ngrams, doc_freq_thresh
     )
     term_vec_scaffold = ont_term_features(
-        sample_accs, 
-        sample_to_predicted_terms, 
-        doc_freq_thresh
+        sample_accs, sample_to_predicted_terms, doc_freq_thresh
     )
-    vectorizer = FeatureConverter(
-        ngram_vec_scaffold, 
-        term_vec_scaffold
-    )
+    vectorizer = FeatureConverter(ngram_vec_scaffold, term_vec_scaffold)
 
     feature_vecs = [
         vectorizer.convert_to_features(
-            sample_to_ngrams[x], 
-            sample_to_predicted_terms[x]
-        ) 
+            sample_to_ngrams[x], sample_to_predicted_terms[x]
+        )
         for x in sample_accs
     ]
 
     classif = OneVsRestClassifier(
-        "logistic_regression_l1", 
-        ngram_vec_scaffold, 
-        term_vec_scaffold, 
-        cvcl_og, 
-        num_features_per_class=num_features_per_class, 
-        use_predicted_term_rules=True
+        "logistic_regression_l1",
+        ngram_vec_scaffold,
+        term_vec_scaffold,
+        cvcl_og,
+        num_features_per_class=num_features_per_class,
+        use_predicted_term_rules=True,
     )
     classif.fit(feature_vecs, labels)
     return vectorizer, classif
@@ -226,18 +203,13 @@ def learn_model(
 def get_ngrams_from_tag_to_val(tag_to_val):
     ngrams = []
     for tag, val in tag_to_val.items():
-        for n in range(1, N+1):
-            ngrams += [
-                x.lower()  
-                for x in get_ngrams(tag, n)[0]
-            ]
+        for n in range(1, N + 1):
+            ngrams += [x.lower() for x in get_ngrams(tag, n)[0]]
             for v in val:
-                ngrams += [
-                    x.lower() 
-                    for x in get_ngrams(v, n)[0]
-                ]
+                ngrams += [x.lower() for x in get_ngrams(v, n)[0]]
     ngrams = [x for x in ngrams if len(x) > 1]
     return ngrams
+
 
 def get_samples_to_ngram(dataset):
     print("building n-gram index...")
@@ -246,12 +218,8 @@ def get_samples_to_ngram(dataset):
         sample_to_ngrams[d[2]] = get_ngrams_from_tag_to_val(d[0])
     return sample_to_ngrams
 
-def ngram_features(
-    sample_attributes, 
-    sample_accs, 
-    sample_to_ngrams, 
-    doc_freq_thresh):
 
+def ngram_features(sample_attributes, sample_accs, sample_to_ngrams, doc_freq_thresh):
     if not USE_NGRAM_FEATURES:
         return []
 
@@ -268,8 +236,8 @@ def ngram_features(
     print("Len of n-grams before trim: %d" % len(set(list(n_gram_to_count.keys()))))
     bag_of_n_grams = set(
         [
-            x 
-            for x in list(n_gram_to_count.keys()) 
+            x
+            for x in list(n_gram_to_count.keys())
             if n_gram_to_doc_freq[x] > doc_freq_thresh
         ]
     )
@@ -281,20 +249,14 @@ def ngram_features(
     bag_of_n_grams = bag_of_n_grams.difference(stop_words)
     print("Len of n-grams after stop words: %d" % len(bag_of_n_grams))
 
-    #bag_of_n_grams = set(n_gram_to_count.keys())
+    # bag_of_n_grams = set(n_gram_to_count.keys())
     vec_scaffold = list(bag_of_n_grams)
     print("The vector scaffold is: %s" % vec_scaffold)
 
     return vec_scaffold
 
 
-
-
-def ont_term_features(
-    sample_accs, 
-    sample_to_predicted_terms, 
-    doc_freq_thresh):
-    
+def ont_term_features(sample_accs, sample_to_predicted_terms, doc_freq_thresh):
     if not USE_ONTOLOGY_TERMS:
         return []
 
@@ -308,8 +270,8 @@ def ont_term_features(
 
     bag_of_terms = set(
         [
-            x 
-            for x in list(term_to_doc_freq.keys()) 
+            x
+            for x in list(term_to_doc_freq.keys())
             if term_to_doc_freq[x] > doc_freq_thresh
         ]
     )
@@ -317,7 +279,6 @@ def ont_term_features(
 
     print("The ontology term features are: %s" % term_vec_scaffold)
     return term_vec_scaffold
-
 
 
 def get_ngrams(text, n):
@@ -331,14 +292,14 @@ def get_ngrams(text, n):
     words = nltk.word_tokenize(text)
 
     # The issue we're trying to solve here
-    # is that nltk converts quotes '"' to 
+    # is that nltk converts quotes '"' to
     # double ticks (either "``" or "''" for
-    # before or after the quote. We'd like to 
+    # before or after the quote. We'd like to
     # convert them back...however, this runs into
     # issues when "''" appears in the raw text.
     # Fixing this issue will likely require writing
-    # my own tokenizer...although that will 
-    # potentially be a lot of work.    
+    # my own tokenizer...although that will
+    # potentially be a lot of work.
     new_words = []
     for word in words:
         if word == "``":
@@ -348,7 +309,7 @@ def get_ngrams(text, n):
         else:
             new_words.append(word)
     words = new_words
-    #words = text.split()
+    # words = text.split()
 
     if not words:
         return [], []
@@ -369,25 +330,24 @@ def get_ngrams(text, n):
         if word_i == len(words):
             break
 
-        if text[text_i] ==  words[word_i][word_char_i]:
+        if text[text_i] == words[word_i][word_char_i]:
             word_to_text_indices[word_i].append(text_i)
-            word_char_i += 1 
+            word_char_i += 1
 
     n_grams = []
     intervals = []
-    for i in range(0, len(words)-n+1):
-        grams = words[i:i+n]
+    for i in range(0, len(words) - n + 1):
+        grams = words[i : i + n]
         text_char_begin = word_to_text_indices[i][0]
-        text_char_end = word_to_text_indices[i+n-1][-1]
-        n_gram = text[text_char_begin: text_char_end+1]
+        text_char_end = word_to_text_indices[i + n - 1][-1]
+        n_gram = text[text_char_begin : text_char_end + 1]
         n_grams.append(n_gram)
-        intervals.append((text_char_begin, text_char_end+1))
+        intervals.append((text_char_begin, text_char_end + 1))
 
     return n_grams, intervals
 
 
 def get_samples_to_mappings(matches_file, ogs):
-
     print("loading sample to predicted ontology term mappings...")
     sample_to_predicted_terms = defaultdict(lambda: set())
     sample_to_real_val_props = {}
@@ -395,10 +355,7 @@ def get_samples_to_mappings(matches_file, ogs):
     with open(matches_file, "r") as f:
         j = json.load(f)
         for sample_acc, map_data in j.items():
-            mapped_term_ids = [
-                x["term_id"] 
-                for x in map_data["mapped_terms"]
-            ]
+            mapped_term_ids = [x["term_id"] for x in map_data["mapped_terms"]]
             for term in mapped_term_ids:
                 for og in ogs:
                     if term in og.mappable_term_ids:
@@ -406,10 +363,10 @@ def get_samples_to_mappings(matches_file, ogs):
                         break
             real_val_props = [
                 {
-                    "property_id": x["property_id"], 
-                    "unit_id": x["unit_id"], 
-                    "value": x["value"]
-                } 
+                    "property_id": x["property_id"],
+                    "unit_id": x["unit_id"],
+                    "value": x["value"],
+                }
                 for x in map_data["real_value_properties"]
             ]
             sample_to_real_val_props[sample_acc] = real_val_props
@@ -418,14 +375,12 @@ def get_samples_to_mappings(matches_file, ogs):
         sup_terms = set()
         for og in ogs:
             for term in predicted_terms:
-                s = og.recursive_relationship(
-                    term, 
-                    ['is_a', 'part_of']
-                )
+                s = og.recursive_relationship(term, ["is_a", "part_of"])
                 sup_terms.update(s)
         sample_to_predicted_terms[sample_acc].update(sup_terms)
 
     return sample_to_predicted_terms, sample_to_real_val_props
+
 
 if __name__ == "__main__":
     main()

@@ -7,11 +7,12 @@ import marisa_trie as mt
 import map_sra_to_ontology
 from map_sra_to_ontology import load_ontology
 
+
 def generate_implications(og_a, og_b):
     """
     Given two ontologies og_a and og_b, find all terms in
     og_a that imply the term og_b. For example, the term
-    'prostate cancer' implies 'cancer'. 
+    'prostate cancer' implies 'cancer'.
     """
 
     term_to_implications = defaultdict(lambda: [])
@@ -19,7 +20,7 @@ def generate_implications(og_a, og_b):
     for term, implied_terms in temp.items():
         term_to_implications[term] += implied_terms
 
-    # Filter terms 
+    # Filter terms
     term_to_superterm_linked_terms = None
     with open("term_to_superterm_linked_terms.json", "r") as f:
         term_to_superterm_linked_terms = json.load(f)
@@ -33,13 +34,12 @@ def generate_implications(og_a, og_b):
         else:
             new_term_to_implications[term] = conseq_terms
     return new_term_to_implications
-    
-    
+
 
 def main():
-    doid_disease_og, x,y = load_ontology.load("2")
-    efo_disease_og, x,y = load_ontology.load("3")
-    efo_cellline_og, x,y = load_ontology.load("10")
+    doid_disease_og, x, y = load_ontology.load("2")
+    efo_disease_og, x, y = load_ontology.load("3")
+    efo_cellline_og, x, y = load_ontology.load("10")
 
     print("Generating cell line to disease implications...")
     term_to_implications = generate_implications(efo_disease_og, efo_cellline_og)
@@ -47,7 +47,12 @@ def main():
     for term, implied_terms in temp.items():
         term_to_implications[term] += implied_terms
     with open("cellline_to_disease_implied_terms.json", "w") as f:
-        f.write(json.dumps(term_to_implications, indent=4, separators=(',', ': '), sort_keys=True))
+        f.write(
+            json.dumps(
+                term_to_implications, indent=4, separators=(",", ": "), sort_keys=True
+            )
+        )
+
 
 class Mapper:
     def __init__(self, og):
@@ -62,7 +67,7 @@ class Mapper:
                 mapped.append(term)
 
         except KeyError:
-            #print "Query '%s' not in trie" % query
+            # print "Query '%s' not in trie" % query
             pass
         return mapped
 
@@ -79,9 +84,13 @@ class Mapper:
                     # tups.append((syn.syn_str.decode('utf-8'), [curr_i]))
                     tups.append((syn.syn_str, [curr_i]))
                 except UnicodeEncodeError:
-                    print("Warning! Unable to decode unicode of a synonym for term %s" % term.id)
+                    print(
+                        "Warning! Unable to decode unicode of a synonym for term %s"
+                        % term.id
+                    )
             curr_i += 1
         return mt.RecordTrie("<i", tups), terms_array
+
 
 def subterm_consequent_terms(og_a, og_b):
     """
@@ -108,14 +117,11 @@ def subterm_consequent_terms(og_a, og_b):
     c = 1
 
     for a_term in list(og_a.id_to_term.values()):
-
         # if c % 100 == 0:
         #     print("Examined %d/%d terms" % (c, total))
         c += 1
 
-
         for b_term in b_terms_not_in_a:
-
             a_strs = [a_term.name]
             a_strs += [x.syn_str for x in a_term.synonyms if x.syn_type == "EXACT"]
 
@@ -133,18 +139,21 @@ def subterm_consequent_terms(og_a, og_b):
                             if a_tok not in b_toks:
                                 a_str_in_b_str = False
                                 break
- 
-                        if a_str_in_b_str and a_str in b_str and a_str != b_str and len(a_str) > 2 and len(b_str) > 2:
+
+                        if (
+                            a_str_in_b_str
+                            and a_str in b_str
+                            and a_str != b_str
+                            and len(a_str) > 2
+                            and len(b_str) > 2
+                        ):
                             term_to_implications[b_term.id].append(a_term.id)
                             # print("Found match %s --> %s: '%s' --> '%s'" % (b_term.id, a_term.id, b_str, a_str))
                     except UnicodeDecodeError:
                         pass
-                        #print "Error decoding strings trying match %s with %s" % (b_term.id, a_term.id)
+                        # print "Error decoding strings trying match %s with %s" % (b_term.id, a_term.id)
 
     return term_to_implications
-
-
-
 
 
 if __name__ == "__main__":
