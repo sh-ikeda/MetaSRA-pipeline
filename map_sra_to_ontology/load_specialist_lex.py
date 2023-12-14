@@ -4,11 +4,8 @@
 #   a trie data structure. Allows for fast query of the lexicon.
 ###############################################################################
 
-from optparse import OptionParser
-import os
 from os.path import join
-from collections import deque, defaultdict
-import json
+from collections import defaultdict
 import marisa_trie
 import pkg_resources as pr
 
@@ -199,8 +196,6 @@ def parse_LEXICON(lex_loc):
         if not c_lines:
             return
 
-        entries = {}
-
         c_lines[0] = c_lines[0][1:]
         c_lines = [x.strip() for x in c_lines]
 
@@ -224,7 +219,6 @@ def parse_LEXICON(lex_loc):
 
     f_name = join(lex_loc, "LEXICON")
     with open(f_name, "r") as f:
-        # lexicon = defaultdict(lambda: {})
         lexicon = defaultdict(dd_init)
 
         curr_lines = []
