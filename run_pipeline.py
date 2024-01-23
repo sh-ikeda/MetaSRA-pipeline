@@ -251,9 +251,9 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data, vectorizer,
             sup_terms.update(og.recursive_relationship(term_id, ["is_a", "part_of"]))
     mapped_terms = list(sup_terms)
 
-    predicted, confidence = run_sample_type_predictor.run_sample_type_prediction(
-        tag_to_val, mapped_terms, real_val_props, vectorizer, model
-    )
+    # predicted, confidence = run_sample_type_predictor.run_sample_type_prediction(
+    #     tag_to_val, mapped_terms, real_val_props, vectorizer, model
+    # )
     # for_sample_type_prediction = {
     #     "tag_to_val": tag_to_val,
     #     "mapped_terms": mapped_terms,
@@ -263,8 +263,8 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data, vectorizer,
     mapping_data = {
         "mapped ontology terms": mapped_terms_details,
         "real-value properties": real_val_props,
-        "sample type": predicted,
-        "sample-type confidence": confidence,
+        # "sample type": predicted,
+        # "sample-type confidence": confidence,
     }
 
     accession = tag_to_val.get("accession")
@@ -293,8 +293,8 @@ def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
                 str(mot["full_length_match"]),
                 str(mot["exact_match"]),
                 str(mot["match_target"]),
-                sample["sample type"],
-                str(sample["sample-type confidence"]),
+                # sample["sample type"],
+                # str(sample["sample-type confidence"]),
             ]
             if lines != "":
                 lines += "\n"
