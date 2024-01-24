@@ -22,19 +22,19 @@ python reformat_cellosaurus.py
 
 # Download SPECIALIST Lexicon
 echo "Downloading SPECIALIST Lexicon..."
-python download_specialist_lexicon.py 
+python download_specialist_lexicon.py
 
 # Build BK-tree for fuzzy string matching
 echo "Building the BK-tree from the ontologies..."
 mkdir ../map_sra_to_ontology/fuzzy_matching_index
-python build_bk_tree.py
-mv fuzzy_match_bk_tree.pickle ../map_sra_to_ontology/fuzzy_matching_index 
+python build_bk_tree.py -i 1,2,18,5,7,9,19 -j fuzzy_match_string_data.json -p fuzzy_match_bk_tree.pickle
+mv fuzzy_match_bk_tree.pickle ../map_sra_to_ontology/fuzzy_matching_index
 mv fuzzy_match_string_data.json ../map_sra_to_ontology/fuzzy_matching_index
 
-# Link the terms between ontologies 
+# Link the terms between ontologies
 echo "Linking ontologies..."
 python link_ontologies.py
-python superterm_linked_terms.py 
+python superterm_linked_terms.py
 cp term_to_superterm_linked_terms.json ../map_sra_to_ontology/metadata
 
 # Generate cell-line to disease implications
