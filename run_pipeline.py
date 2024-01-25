@@ -92,7 +92,7 @@ def main():
             entry["taxId"] = "9606"
             for k in tag_to_val["attributes"]:
                 val = tag_to_val["attributes"][k]
-                if k != "accession" and len(val) < 100:
+                if k != "accession":
                     entry[k] = [val]
             tag_to_vals.append(entry)
     else:
@@ -105,11 +105,7 @@ def main():
                     continue
                 vals = []
                 for val in tag_to_val["characteristics"][k]:
-                    if len(val["text"]) < 100:
-                        vals.append(val["text"])
-                    # else:
-                    #     print(entry)
-                    #     print(k, val["text"])
+                    vals.append(val["text"])
                 if len(vals) != 0:
                     entry[k] = vals
             tag_to_vals.append(entry)

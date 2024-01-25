@@ -154,6 +154,7 @@ class Pipeline:
     def __init__(self, stages):
         self.stages = stages
         # self.scoring_strategy = scoring_strategy
+        self.text_length_limit = 100
 
     def run(self, tag_to_val, covered_query_map):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
@@ -171,8 +172,9 @@ class Pipeline:
             if tag == "accession":
                 continue
             for v in val:
-                kv_node = KeyValueNode(tag, v)
-                tm_graph.add_node(kv_node)
+                if len(v) <= self.text_length_limit:
+                    kv_node = KeyValueNode(tag, v)
+                    tm_graph.add_node(kv_node)
 
         # is_first = True
         # for stage in self.stages:
