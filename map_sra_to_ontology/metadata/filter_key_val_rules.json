@@ -54,7 +54,16 @@
         "INSDC status",
         "NCBI submission model",
         "NCBI submission package",
-        "accession"
+        "accession",
+        "External Id",
+        "Submitter Id",
+        "SRA accession",
+        "INSDC center alias",
+        "ENA last update",
+        "ENA first public",
+        "ENA-CHECKLIST",
+        "ENA-LAST-UPDATE",
+        "ENA-FIRST-PUBLIC"
     ],
     "filter_values": [
         "-",
