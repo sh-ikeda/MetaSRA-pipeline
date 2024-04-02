@@ -1,10 +1,10 @@
 {
     "UBERON": "http://ontologies.berkeleybop.org/uberon/ext.obo",
     "DOID": "https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/doid.obo",
-    "EFO": "https://sourceforge.net/p/efo/code/HEAD/tree/trunk/src/efoinobo/efo.obo?format=raw",
+    "EFO": "https://www.ebi.ac.uk/efo/efo.obo",
     "CVCL": "ftp://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo",
     "CL": "https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo",
     "CHEBI": "ftp://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi.obo",
-    "UO": "https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/unit.obo",
-    "ORDO": "http://data.bioontology.org/ontologies/ORDO_OBO/submissions/1/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb"
+    "UO": "https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/uo.obo",
+    "ORDO": "https://www.orphadata.com/data/ontologies/ordo/last_version/ORDO_en_4.4.owl"
 }
