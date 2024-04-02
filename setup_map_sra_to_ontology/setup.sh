@@ -13,6 +13,7 @@ METASRA_PATH=$(dirname $(pwd))
 export PYTHONPATH=$METASRA_PATH/:$METASRA_PATH/bktree/:$METASRA_PATH/map_sra_to_ontology/:$PYTHONPATH
 
 # Download ontologies
+## .owl files are converted to .obo here.
 echo "Downloading ontologies..."
 python download_ontologies.py
 
