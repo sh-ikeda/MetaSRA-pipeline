@@ -3,6 +3,8 @@ FROM python:3.9-bookworm
 RUN pip3 install numpy scipy scikit-learn setuptools marisa-trie nltk dill rdflib xlsxwriter
 RUN python3 -c "import nltk; nltk.download('punkt')"
 
+RUN apt-get update -y && apt-get install -y openjdk-17-jdk
+
 WORKDIR /usr/local/bin
 RUN wget https://github.com/ontodev/robot/releases/download/v1.9.5/robot.jar
 RUN wget https://raw.githubusercontent.com/ontodev/robot/master/bin/robot
