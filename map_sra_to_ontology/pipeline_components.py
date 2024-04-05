@@ -6,21 +6,16 @@ import json
 from collections import defaultdict, deque
 import re
 import pickle
+import marisa_trie as mt
 
 # from multiprocessing import Pool
-import numpy as np
 import nltk
 from nltk.metrics.distance import edit_distance
 import pkg_resources as pr
 from os.path import join
-import load_ontology
 from text_reasoning_graph import *
-import ball_tree_distance
 from load_specialist_lex import SpecialistLexicon
 
-import bktree
-from bktree import BKTree
-import marisa_trie as mt
 
 # Relative paths to resources
 resource_package = __name__
