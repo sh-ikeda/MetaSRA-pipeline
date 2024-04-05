@@ -67,6 +67,8 @@ def p_48(ont_id_to_og):
     taxid_filter = pc.FilterMappingsToCellLinesByTaxId_Stage(ont_id_to_og["4"])
     sys.stderr.write("[{}] filter_ambiguous\n".format(datetime.datetime.now()))
     filter_ambiguous = pc.FilterMappingsFromAmbiguousAttributes_Stage()
+    sys.stderr.write("[{}] remove_non_specific\n".format(datetime.datetime.now()))
+    remove_non_specific = pc.RemoveNonSpecificTerms_Stage()
 
     stages = [
         key_val_filt,
@@ -96,7 +98,8 @@ def p_48(ont_id_to_og):
         # cust_conseq,
         real_val,
         filt_match_priority,
-        prior_spec_match
+        prior_spec_match,
+        remove_non_specific
         # infer_cell_line,
         # infer_dev_stage,
         # cell_culture

@@ -71,6 +71,11 @@ AMBIGUOUS_KEYS_JSON = pr.resource_filename(
     resource_package, join("metadata", "ambiguous_keys.json")
 )
 
+NON_SPECIFIC_TERMS_JSON = pr.resource_filename(
+    resource_package, join("metadata", "non_specific_terms.json")
+)
+
+
 # TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score dictionary
 
 VERBOSE = False
@@ -1979,6 +1984,18 @@ class FilterMappingsFromAmbiguousAttributes_Stage:
         for o_node in remove_nodes:
             text_mining_graph.delete_node(o_node)
 
+        return text_mining_graph
+
+
+class RemoveNonSpecificTerms_Stage:
+    def __init__(self):
+        with open(NON_SPECIFIC_TERMS_JSON, "r") as f:
+            self.non_specific_terms = set(json.load(f))
+
+    def run(self, text_mining_graph):
+        for mt_node in text_mining_graph.mapping_target_nodes:
+            if mt_node.term_id in self.non_specific_terms:
+                text_mining_graph.delete_node(mt_node)
         return text_mining_graph
 
 

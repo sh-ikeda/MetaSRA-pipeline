@@ -208,27 +208,17 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data, vectorizer,
     mapped_terms = []
     real_val_props = []
     mapped_terms_details = []
-    # remove "cell line", "disease", "treatment"
-    excluding_term_ids = [
-        "EFO:0000322",
-        "DOID:4",
-        "EFO:0000727",
-        "EFO:0000408",
-        "Orphanet:377788",
-    ]
 
     for mapped_term_data in mapping_data["mapped_terms"]:
         term_id = mapped_term_data["term_id"]
         for ont in list(ont_id_to_og.values()):
-            if (
-                term_id in ont.get_mappable_term_ids()
-                and term_id not in excluding_term_ids
-            ):
+            if term_id in ont.get_mappable_term_ids():
                 mapped_terms.append(term_id)
                 mapped_term_detail = mapped_term_data.copy()
                 mapped_term_detail["term_name"] = ont.id_to_term[term_id].name
                 mapped_terms_details.append(mapped_term_detail)
                 break
+
     for real_val_data in mapping_data["real_value_properties"]:
         real_val_prop = {
             "unit_id": real_val_data["unit_id"],
