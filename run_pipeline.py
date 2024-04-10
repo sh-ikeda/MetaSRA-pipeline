@@ -290,8 +290,8 @@ def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
             if key in ["accession", "taxId"]:
                 continue
             if key not in mapped_keys:
-                line = sample["accession"]
                 for v in acc_to_kvs[sample["accession"]][key]:
+                    line = sample["accession"]
                     line += "\t" + key + "\t" + v
                     if lines != "":
                         lines += "\n"
