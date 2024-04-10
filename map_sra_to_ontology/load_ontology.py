@@ -27,6 +27,8 @@ def load(ontology_index):
     }
     og = ontology_graph.build_ontology(
         ont_to_loc,
+        ontology_index,
+        ont_config["description"],
         restrict_to_idspaces=restrict_to_idspaces,
         include_obsolete=False,
         restrict_to_roots=restrict_to_roots,
@@ -38,7 +40,7 @@ def load(ontology_index):
 
 def main():
     og, i, r = load("4")
-    print(og.id_to_term["CVCL:C792"])
+    print(og.id_to_term["CVCL_C792"])
     # og, i, r = load("19")
     # print(og.id_to_term["Orphanet:95"])
     # og, i, r = load("16")

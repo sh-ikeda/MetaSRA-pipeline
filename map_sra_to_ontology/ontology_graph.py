@@ -107,8 +107,10 @@ class Term:
 
 
 class OntologyGraph:
-    def __init__(self, id_to_term, enriched_synonyms_file=None):
+    def __init__(self, id_to_term, ont_id, ont_name, enriched_synonyms_file=None):
         self.id_to_term = id_to_term
+        self.ont_id = ont_id
+        self.ont_name = ont_name
 
     def subtype_names(self, supertype_name):
         id = self.name_to_ids[supertype_name]
@@ -174,8 +176,8 @@ class MappableOntologyGraph(OntologyGraph):
     def empty_list(self):
         return []
 
-    def __init__(self, id_to_term, nonmappable_terms):
-        OntologyGraph.__init__(self, id_to_term)
+    def __init__(self, id_to_term, ont_id, ont_name, nonmappable_terms):
+        OntologyGraph.__init__(self, id_to_term, ont_id, ont_name)
         """
         Args:
             nonmappable_terms: collection of term IDs that cannot 
@@ -200,6 +202,8 @@ class MappableOntologyGraph(OntologyGraph):
 
 def build_ontology(
     ont_to_loc,
+    ont_id,
+    ont_name,
     restrict_to_idspaces=None,
     include_obsolete=False,
     restrict_to_roots=None,
@@ -207,6 +211,8 @@ def build_ontology(
 ):
     og = parse_obos(
         ont_to_loc,
+        ont_id,
+        ont_name,
         restrict_to_idspaces=restrict_to_idspaces,
         include_obsolete=include_obsolete,
     )
@@ -270,7 +276,7 @@ def build_ontology(
             ]
 
         # return OntologyGraph(id_to_term)
-    return MappableOntologyGraph(id_to_term, exclude_terms)
+    return MappableOntologyGraph(id_to_term, ont_id, ont_name, exclude_terms)
     # else:
     #     return MappableOntologyGraph(og.id_to_term, exclude_terms)
 
@@ -321,7 +327,7 @@ def most_specific_terms(term_ids, og, sup_relations=["is_a"]):
     )  # TODO Clean this up
 
 
-def parse_obos(ont_to_loc, restrict_to_idspaces=None, include_obsolete=False):
+def parse_obos(ont_to_loc, ont_id, ont_name, restrict_to_idspaces=None, include_obsolete=False):
     def add_inverse_relationship_to_parents(term, relation, inverse_relation):
         for sup_term_id in [x for x in term.get_related_terms(relation)]:
             if sup_term_id in id_to_term:
@@ -365,7 +371,7 @@ def parse_obos(ont_to_loc, restrict_to_idspaces=None, include_obsolete=False):
         add_inverse_relationship_to_parents(term, "part_of", "inv_part_of")
 
     # return OntologyGraph(id_to_term, name_to_ids)
-    return OntologyGraph(id_to_term)
+    return OntologyGraph(id_to_term, ont_id, ont_name)
 
 
 def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False):
