@@ -16,6 +16,7 @@ import pkg_resources as pr
 from map_sra_to_ontology import config
 from map_sra_to_ontology import pipeline_components as pc
 from map_sra_to_ontology import run_sample_type_predictor
+from map_sra_to_ontology.utils import log_time
 from os.path import join
 import rdflib
 import urllib
@@ -83,8 +84,7 @@ def main():
         biosample_json = json.load(f)
 
     tag_to_vals = []
-    ct = datetime.datetime.now()
-    sys.stderr.write("[{}] Parsing BioSample JSON\n".format(ct))
+    log_time("Parsing BioSample JSON")
     if test_mode:
         for tag_to_val in biosample_json:
             entry = {}
@@ -114,8 +114,7 @@ def main():
             #    entry[k] = val
 
     # Load ontologies
-    ct = datetime.datetime.now()
-    sys.stderr.write("[{}] Initializing pipeline.\n".format(ct))
+    log_time("Initializing pipeline.")
     # dill.load_session(init_dill)
     with open(init_dill, "rb") as f:
         # vars = dill.load(f)
@@ -129,15 +128,13 @@ def main():
             pipeline.stages[14].str_to_mappings = json.load(f)
 
     all_mappings = []
-    ct = datetime.datetime.now()
-    sys.stderr.write("[{}] Mapping with {} processes.\n".format(ct, processes))
+    log_time(f"Mapping with {processes} processes")
     if processes == 1:
         i = 0
         covered_query_map = dict()
         for tag_to_val in tag_to_vals:
             if i % 2 == 0 and debug_mode:
-                ct = datetime.datetime.now()
-                sys.stderr.write("[{}] {}\n".format(ct, i))
+                log_time(str(i))
             i += 1
             mapped_terms, real_props, covered_query_map = pipeline.run(
                 tag_to_val, covered_query_map
@@ -157,8 +154,7 @@ def main():
         for r in res:
             all_mappings += r.get()
 
-    ct = datetime.datetime.now()
-    sys.stderr.write("[{}] Run pipeline on key vals\n".format(ct, processes))
+    log_time("Run pipeline on key vals")
     outputs = []
     output_for_prediction = []
     vectorizer_f = pr.resource_filename(
@@ -183,8 +179,7 @@ def main():
         )
         outputs.append(result)
 
-    ct = datetime.datetime.now()
-    sys.stderr.write("[{}] Writing.\n".format(ct))
+    log_time("Writing.")
     if output_f.split(".")[-1] == "json":
         output_json = json.dumps(outputs, indent=4, separators=(",", ": "))
         with open(output_f, mode="w") as f:
@@ -200,8 +195,7 @@ def main():
     #     output_json = json.dumps(output_for_prediction,
     #                              indent=4, separators=(',', ': '))
     #     f.write(output_json)
-    ct = datetime.datetime.now()
-    sys.stderr.write("[{}] Done.\n".format(ct))
+    log_time("Done.")
 
 
 def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data, vectorizer, model):
