@@ -8,19 +8,13 @@
 from optparse import OptionParser
 import json
 import sys
-from collections import defaultdict
 import dill
-import datetime
 from multiprocessing import Pool
 import pkg_resources as pr
-from map_sra_to_ontology import config
-from map_sra_to_ontology import pipeline_components as pc
-from map_sra_to_ontology import run_sample_type_predictor
 from map_sra_to_ontology.utils import log_time
 from os.path import join
 import rdflib
 import urllib
-import re
 import pickle
 import xlsxwriter
 
