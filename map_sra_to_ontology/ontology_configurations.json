@@ -409,6 +409,6 @@
         ],
         "exclude_terms": {
         },
-        "description": "Arabidopsis thaliana-related terms in the EFO"
+        "description": "Arabidopsis thaliana ecotype terms in the EFO"
     }
 }
