@@ -158,11 +158,12 @@ class KeyValueNode(ENode):
 
 
 class TokenNode(ENode):
-    def __init__(self, token_str, origin_gram_start, origin_gram_end):
+    def __init__(self, token_str, origin_gram_start, origin_gram_end, origin_key):
         super(TokenNode, self).__init__()
         self.token_str = token_str
         self.origin_gram_start = origin_gram_start
         self.origin_gram_end = origin_gram_end
+        self.origin_key = origin_key
 
     def __eq__(self, other):
         if isinstance(other, TokenNode):
@@ -186,10 +187,11 @@ class TokenNode(ENode):
         )
 
     def __str__(self):
-        return "TokenNode(token_str='%s', origin_gram_start=%d, origin_gram_end=%d)" % (
+        return "TokenNode(token_str='%s', origin_gram_start=%d, origin_gram_end=%d, origin_key='%s')" % (
             self.token_str,
             self.origin_gram_start,
             self.origin_gram_end,
+            self.origin_key,
         )
 
     def __repr__(self):
@@ -331,7 +333,7 @@ class TextReasoningGraph:
         for tok_node in self.token_nodes:
             i += 1
             node_id[f"{tok_node}"] = f"{i}"
-            r_str += f'"{i}" :tok_node name:"{tok_node.token_str}"\n'
+            r_str += f'"{i}" :tok_node name:"{tok_node.token_str}" origin_key:"{tok_node.origin_key}"\n'
         for ont_node in self.ontology_term_nodes:
             i += 1
             node_id[f"{ont_node}"] = f"{i}"

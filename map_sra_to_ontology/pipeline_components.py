@@ -420,13 +420,13 @@ class InitKeyValueTokens_Stage:
         for kv_node in text_mining_graph.key_val_nodes:
             ind_start = curr_index
             ind_end = curr_index + len(kv_node.key)
-            key_node = TokenNode(kv_node.key, ind_start, ind_end)
+            key_node = TokenNode(kv_node.key, ind_start, ind_end, kv_node.key)
             text_mining_graph.add_edge(kv_node, key_node, DerivesInto("key"))
 
             curr_index = ind_end
             ind_start = curr_index
             ind_end = curr_index + len(kv_node.value)
-            val_node = TokenNode(kv_node.value, ind_start, ind_end)
+            val_node = TokenNode(kv_node.value, ind_start, ind_end, kv_node.key)
             text_mining_graph.add_edge(kv_node, val_node, DerivesInto("val"))
 
             curr_index = ind_end
@@ -506,7 +506,7 @@ class Synonyms_Stage(object):
                     for syn in syn_set:
                         tnode_to_edges[t_node].append(
                             TokenNode(
-                                syn, t_node.origin_gram_start, t_node.origin_gram_end
+                                syn, t_node.origin_gram_start, t_node.origin_gram_end, t_node.origin_key
                             )
                         )
 
@@ -553,6 +553,7 @@ class NGram_Stage:
                         g_str,
                         t_node.origin_gram_start + interval[0],
                         t_node.origin_gram_start + interval[1],
+                        t_node.origin_key,
                     )
                     tnode_to_edges[t_node].append(new_t_node)
 
@@ -573,6 +574,7 @@ class Lowercase_Stage:
                 t_node.token_str.lower(),
                 t_node.origin_gram_start,
                 t_node.origin_gram_end,
+                t_node.origin_key,
             )
 
         for source_node, target_node in tnode_to_edges.items():
@@ -630,6 +632,7 @@ class PropertySpecificSynonym_Stage:
                                                         syn,
                                                         down_node.origin_gram_start,
                                                         down_node.origin_gram_end,
+                                                        down_node.origin_key,
                                                     )
                                                     text_mining_graph.add_edge(
                                                         down_node, new_node, edge
@@ -836,7 +839,7 @@ class SPECIALISTLexInflectionalVariants:
             for infl_var in infl_vars:
                 new_str = t_node.token_str[:-len_last_gram] + infl_var
                 tnode_to_edges[t_node].append(
-                    TokenNode(new_str, t_node.origin_gram_start, t_node.origin_gram_end)
+                    TokenNode(new_str, t_node.origin_gram_start, t_node.origin_gram_end, t_node.origin_key)
                 )
 
         for source_node, target_nodes in tnode_to_edges.items():
@@ -863,7 +866,7 @@ class SPECIALISTSpellingVariants:
             for infl_var in infl_vars:
                 new_str = t_node.token_str[:-len_last_gram] + infl_var
                 tnode_to_edges[t_node].append(
-                    TokenNode(new_str, t_node.origin_gram_start, t_node.origin_gram_end)
+                    TokenNode(new_str, t_node.origin_gram_start, t_node.origin_gram_end, t_node.origin_key)
                 )
 
         for source_node, target_nodes in tnode_to_edges.items():
@@ -897,6 +900,7 @@ class Delimit_Stage:
                     split_t_str,
                     curr_interval_begin,
                     curr_interval_begin + len(split_t_str),
+                    t_node.origin_key,
                 )
                 node_to_next_nodes[t_node].append(new_t_node)
                 curr_interval_begin += len(split_t_str) + len(self.delimiter)
@@ -1547,7 +1551,7 @@ class AcronymToExpansion_Stage:
             if t_node.token_str in self.acr_to_expansions:
                 for expansion in self.acr_to_expansions[t_node.token_str]:
                     new_t_node = TokenNode(
-                        expansion, t_node.origin_gram_start, t_node.origin_gram_end
+                        expansion, t_node.origin_gram_start, t_node.origin_gram_end, t_node.origin_key
                     )
                     node_to_new_edges[t_node].append((new_t_node, edge))
 
@@ -1780,8 +1784,8 @@ class ParseTimeWithUnit_Stage:
                 value_end = t_node.origin_gram_start + len(value)
                 unit_start = t_node.origin_gram_end - len(unit)
                 unit_end = t_node.origin_gram_end
-                value_t_node = TokenNode(value, value_start, value_end)
-                unit_t_node = TokenNode(unit, unit_start, unit_end)
+                value_t_node = TokenNode(value, value_start, value_end, t_node.origin_key)
+                unit_t_node = TokenNode(unit, unit_start, unit_end, t_node.origin_key)
                 tnode_to_edges[t_node].append(value_t_node)
                 tnode_to_edges[t_node].append(unit_t_node)
                 unit_t_nodes.add(unit_t_node)
@@ -1800,6 +1804,7 @@ class ParseTimeWithUnit_Stage:
                 expanded_unit,
                 unit_t_node.origin_gram_start,
                 unit_t_node.origin_gram_end,
+                unit_t_node.origin_key,
             )
             text_mining_graph.add_edge(unit_t_node, syn_unit_t_node, unit_edge)
 
