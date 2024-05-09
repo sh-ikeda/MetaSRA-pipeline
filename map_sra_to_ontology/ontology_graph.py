@@ -2,17 +2,14 @@
 
 import re
 import sys
-from optparse import OptionParser
 from queue import Queue
 
 try:
     import pygraphviz as pgv
 except:
     print("Unable to import pygraphviz. Visualization is disabled.", file=sys.stderr)
-from map_sra_to_ontology import config
 
 import pkg_resources as pr
-import os
 from os.path import join
 import json
 
