@@ -40,7 +40,7 @@ def load(ontology_index):
 
 def main():
     og, i, r = load("4")
-    print(og.id_to_term["CVCL_C792"])
+    print(og.id_to_term["CVCL:C792"])
     # og, i, r = load("19")
     # print(og.id_to_term["Orphanet:95"])
     # og, i, r = load("16")
