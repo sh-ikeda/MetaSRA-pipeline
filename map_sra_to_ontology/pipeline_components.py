@@ -1994,7 +1994,7 @@ class RemoveNonSpecificTerms_Stage:
 
     def run(self, text_mining_graph):
         for mt_node in text_mining_graph.mapping_target_nodes:
-            if mt_node.term_id in self.non_specific_terms:
+            if (not isinstance(mt_node, CustomMappingTargetNode)) and mt_node.term_id in self.non_specific_terms:
                 text_mining_graph.delete_node(mt_node)
         return text_mining_graph
 
