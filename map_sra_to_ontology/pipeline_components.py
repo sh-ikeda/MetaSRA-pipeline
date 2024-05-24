@@ -1835,6 +1835,9 @@ class CustomConsequentTerms_Stage:
             for e in new_edges:
                 text_mining_graph.add_edge(node, e[0], e[1])
 
+        for node in node_to_new_edges.keys():
+            text_mining_graph.add_node(node)
+
         return text_mining_graph
 
 
@@ -1856,6 +1859,9 @@ class LinkedTermsOfSuperterms_Stage:
         for node, new_edges in node_to_new_edges.items():
             for e in new_edges:
                 text_mining_graph.add_edge(node, e[0], e[1])
+
+        for node in node_to_new_edges.keys():
+            text_mining_graph.add_node(node)
 
         return text_mining_graph
 

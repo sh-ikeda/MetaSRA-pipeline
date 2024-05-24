@@ -90,12 +90,12 @@ def p_48(ont_id_to_og):
         match_cust_targs,
         block_cell_line_key,
         filter_ambiguous,
-        taxid_filter,
         linked_super,
         # cellline_to_implied_disease,
         subphrase_linked,
         # cust_conseq,
         real_val,
+        taxid_filter,
         filt_match_priority,
         prior_spec_match,
         remove_non_specific
