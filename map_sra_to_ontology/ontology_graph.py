@@ -45,6 +45,7 @@ class Term:
         synonyms=[],
         comment=None,
         xrefs=None,
+        xrefs_comments=None,
         taxids=None,
         relationships={},
         property_values=[],
@@ -61,6 +62,7 @@ class Term:
             comment: comment about the term
             xrefs: list of URIs of external definitions of
                 this term
+            xrefs_comments: list of comments for each xref
             relationships: a dictionary mapping a relationship
                 type to term id's related to this term through
                 that type
@@ -71,6 +73,7 @@ class Term:
         self.synonyms = synonyms
         self.comment = comment
         self.xrefs = xrefs
+        self.xrefs_comments = xrefs_comments
         self.relationships = relationships
         self.property_values = property_values
         self.subsets = subsets
@@ -86,6 +89,7 @@ class Term:
             "relationships": self.relationships,
             "subsets": self.subsets,
             "xrefs": self.xrefs,
+            "xrefs_comments": self.xrefs_comments,
             "taxid": self.taxids,
         }
         return str(rep)
@@ -522,10 +526,20 @@ def parse_entity(lines, restrict_to_idspaces):
         return synonyms
 
     def extract_xrefs(raw_xrefs):
-        xrefs = set()
+        # xrefs = set()
+        # for xref in raw_xrefs:
+        #     xrefs.add(xref.split("!")[0].strip())
+        # return list(xrefs)
+        xrefs = []
         for xref in raw_xrefs:
-            xrefs.add(xref.split("!")[0].strip())
-        return list(xrefs)
+            xrefs.append(xref.split("!")[0].strip())
+        return xrefs
+
+    def extract_xrefs_comments(raw_xrefs):
+        xrefs_comments = []
+        for xref in raw_xrefs:
+            xrefs_comments.append("!".join(xref.split("!")[1:]).strip())
+        return xrefs_comments
 
     def extract_taxids(raw_xrefs):
         taxids = set()
@@ -570,6 +584,12 @@ def parse_entity(lines, restrict_to_idspaces):
         if "xref" in attrs:
             xrefs = extract_xrefs(attrs["xref"])
         return xrefs
+
+    def parse_xrefs_comments(attrs):
+        xrefs_comments = []
+        if "xref" in attrs:
+            xrefs_comments = extract_xrefs_comments(attrs["xref"])
+        return xrefs_comments
 
     def parse_namespace(attrs):
         return attrs["namespace"][0] if "namespace" in list(attrs.keys()) else None
@@ -628,6 +648,7 @@ def parse_entity(lines, restrict_to_idspaces):
         synonyms = parse_synonyms(attrs)
         is_obsolete = parse_is_obsolete(attrs)
         xrefs = parse_xrefs(attrs)
+        xrefs_comments = parse_xrefs_comments(attrs)
         taxids = parse_taxids(attrs)
         comment = parse_comment(attrs)
         relationships = parse_relationships(attrs)
@@ -642,6 +663,7 @@ def parse_entity(lines, restrict_to_idspaces):
             definition=definition,
             synonyms=set(synonyms),
             xrefs=xrefs,
+            xrefs_comments=xrefs_comments,
             relationships=relationships,
             property_values=property_values,
             comment=comment,
