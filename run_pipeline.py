@@ -63,6 +63,13 @@ def main():
         "-d", "--debug", help="debug mode", dest="dbg", action="store_true"
     )
     parser.add_option("-t", "--test", help="test mode", dest="tst", action="store_true")
+    parser.add_option(
+        "-c",
+        "--cvcl",
+        help="Include CVCL summary in tsv output",
+        dest="include_cvcl",
+        action="store_true",
+    )
     (options, args) = parser.parse_args()
 
     input_f = options.input_filename
@@ -72,6 +79,7 @@ def main():
     debug_mode = options.dbg
     keywords_f = options.keywords_filename
     test_mode = options.tst
+    include_cvcl = options.include_cvcl
 
     # Map key-value pairs to ontologies
     with open(input_f, "r", encoding="utf-8") as f:
@@ -125,10 +133,11 @@ def main():
     log_time(f"Mapping with {processes} processes")
     if processes == 1:
         i = 0
+        n_of_samples = str(len(tag_to_vals))
         covered_query_map = dict()
         for tag_to_val in tag_to_vals:
-            if i % 2 == 0 and debug_mode:
-                log_time(str(i))
+            if i % 10 == 0 and debug_mode:
+                log_time(str(i) + " / " + str(n_of_samples))
             i += 1
             mapped_terms, real_props, covered_query_map = pipeline.run(
                 tag_to_val, covered_query_map
@@ -183,7 +192,7 @@ def main():
     elif output_f.split(".")[-1] == "xlsx":
         print_as_xlsx(outputs, output_f)
     else:
-        print_as_tsv(outputs, tag_to_vals, output_f)
+        print_as_tsv(outputs, tag_to_vals, output_f, ont_id_to_og, include_cvcl)
 
     # with open("for_sample_type_prediction"+output_f, mode='w') as f:
     #     output_json = json.dumps(output_for_prediction,
@@ -248,7 +257,7 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data, vectorizer,
     return mapping_data  # , for_sample_type_prediction
 
 
-def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
+def print_as_tsv(mappings, tag_to_vals, output_f, ont_id_to_og, include_cvcl=False):  # ont_id_to_og,
     acc_to_kvs = {}
     lines = ""
     for tag_to_val in tag_to_vals:
@@ -270,10 +279,33 @@ def print_as_tsv(mappings, tag_to_vals, output_f):  # ont_id_to_og,
                 # sample["sample type"],
                 # str(sample["sample-type confidence"]),
             ]
+            if include_cvcl:
+                cvcl_summary = ""
+                term_id = mot["term_id"]
+                if term_id.startswith("CVCL:"):
+                    term = ont_id_to_og["4"].id_to_term[term_id]
+                    cvcl_summary_dict = {
+                        "id": term_id,
+                        "name": term.name,
+                        "synonyms": [{"name": x.syn_str, "type": x.syn_type} for x in list(term.synonyms)],
+                        "subsets": list(term.subsets),
+                        "xrefs": [],
+                        "xrefs_comments": [],
+                    }
+                    for i in range(len(term.xrefs)):
+                        xref = term.xrefs[i]
+                        xref_comment = term.xrefs_comments[i]
+                        if xref.split(":")[0] in ["NCIt", "NCBI_TaxID"]:
+                            cvcl_summary_dict["xrefs"].append(xref)
+                            cvcl_summary_dict["xrefs_comments"].append(xref_comment)
+                    cvcl_summary = json.dumps(cvcl_summary_dict)
+                line.append(cvcl_summary)
             if lines != "":
                 lines += "\n"
             lines += "\t".join(line)
             mapped_keys.add(mot["original_key"])
+
+        ## Attributes not mapped to any terms
         for key in acc_to_kvs[sample["accession"]]:
             if key in ["accession", "taxId"]:
                 continue
