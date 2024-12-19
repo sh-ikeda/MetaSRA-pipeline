@@ -60,9 +60,9 @@ def main():
         default=1,
     )
     parser.add_option(
-        "-d", "--debug", help="debug mode", dest="dbg", action="store_true"
+        "-d", "--debug", help="debug mode", dest="debug_mode", action="store_true"
     )
-    parser.add_option("-t", "--test", help="test mode", dest="tst", action="store_true")
+    parser.add_option("-t", "--test", help="test mode", dest="test_mode", action="store_true")
     parser.add_option(
         "-c",
         "--cvcl",
@@ -76,9 +76,9 @@ def main():
     output_f = options.output_filename
     init_dill = options.init_dill
     processes = options.processes
-    debug_mode = options.dbg
+    debug_mode = options.debug_mode
     keywords_f = options.keywords_filename
-    test_mode = options.tst
+    test_mode = options.test_mode
     include_cvcl = options.include_cvcl
 
     # Map key-value pairs to ontologies
