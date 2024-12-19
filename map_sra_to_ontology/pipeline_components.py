@@ -156,9 +156,11 @@ class Pipeline:
         # self.scoring_strategy = scoring_strategy
         self.text_length_limit = 100
 
-    def run(self, tag_to_val, covered_query_map):
+    def run(self, tag_to_val, covered_query_map, options={}):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
         taxId = ""
+        disable_cell_line_restriction = options["disable_cell_line_restriction"]
+        disable_long_text_restriction = options["disable_long_text_restriction"]
 
         # Create initial text-mining-graph
         for tag, val in tag_to_val.items():
@@ -172,7 +174,7 @@ class Pipeline:
             if tag == "accession":
                 continue
             for v in val:
-                if len(v) <= self.text_length_limit:
+                if (not disable_long_text_restriction) and len(v) <= self.text_length_limit:
                     kv_node = KeyValueNode(tag, v)
                     tm_graph.add_node(kv_node)
 
@@ -196,6 +198,8 @@ class Pipeline:
             elif isinstance(stage, FilterMappingsToCellLinesByTaxId_Stage):
                 if taxId != "":
                     tm_graph = stage.run(tm_graph, taxId)
+            elif disable_cell_line_restriction and isinstance(stage, BlockCellLineNonCellLineKey_Stage):
+                continue
             else:
                 tm_graph = stage.run(tm_graph)
             # if isinstance(stage, ExactStringMatching_Stage):
