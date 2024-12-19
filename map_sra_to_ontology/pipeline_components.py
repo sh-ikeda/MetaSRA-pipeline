@@ -909,6 +909,16 @@ class Delimit_Stage:
                 node_to_next_nodes[t_node].append(new_t_node)
                 curr_interval_begin += len(split_t_str) + len(self.delimiter)
 
+            # "a-b" -> "a b"
+            replaced_str = t_node.token_str.replace(self.delimiter, " ")
+            new_t_node = TokenNode(
+                replaced_str,
+                t_node.origin_gram_start,
+                t_node.origin_gram_start + len(replaced_str),
+                t_node.origin_key,
+            )
+            node_to_next_nodes[t_node].append(new_t_node)
+
         edge = DerivesInto("Delimiter")
         for s_node, next_nodes in node_to_next_nodes.items():
             for t_node in next_nodes:
