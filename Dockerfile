@@ -1,6 +1,6 @@
 FROM python:3.9-bookworm
 
-RUN pip3 install numpy scipy scikit-learn setuptools marisa-trie nltk dill rdflib xlsxwriter
+RUN pip3 install numpy scipy scikit-learn setuptools marisa-trie nltk==3.8.1 dill rdflib xlsxwriter
 RUN python3 -c "import nltk; nltk.download('punkt')"
 
 RUN apt-get update -y && apt-get install -y openjdk-17-jdk
