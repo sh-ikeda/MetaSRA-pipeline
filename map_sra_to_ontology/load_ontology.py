@@ -7,7 +7,7 @@ from map_sra_to_ontology import config
 from map_sra_to_ontology import ontology_graph
 
 
-def load(ontology_index):
+def load(ontology_index, include_lowercase=False):
     resource_package = __name__
     config_f = pr.resource_filename(resource_package, "./ontology_configurations.json")
     with open(config_f, "r") as f:
@@ -33,13 +33,14 @@ def load(ontology_index):
         include_obsolete=False,
         restrict_to_roots=restrict_to_roots,
         exclude_terms=exclude_terms,
+        include_lowercase=include_lowercase,
     )
 
     return og, include_ontologies, restrict_to_roots
 
 
 def main():
-    og, i, r = load("4")
+    og, i, r = load("4", True)
     print(og.id_to_term["CVCL:C792"])
     # og, i, r = load("19")
     # print(og.id_to_term["Orphanet:95"])

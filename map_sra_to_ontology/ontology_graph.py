@@ -209,6 +209,7 @@ def build_ontology(
     include_obsolete=False,
     restrict_to_roots=None,
     exclude_terms=None,
+    include_lowercase=False,
 ):
     og = parse_obos(
         ont_to_loc,
@@ -216,6 +217,7 @@ def build_ontology(
         ont_name,
         restrict_to_idspaces=restrict_to_idspaces,
         include_obsolete=include_obsolete,
+        include_lowercase=include_lowercase,
     )
 
     # Add enriched synonyms
@@ -231,10 +233,11 @@ def build_ontology(
                 term.synonyms.add(Synonym(syn, "ENRICHED"))
 
     # Add lowercase string as a synonym
-    for term in list(og.id_to_term.values()):
-        lowered = term.name.lower()
-        if term.name != lowered:
-            term.synonyms.add(Synonym(lowered, "EXACT"))
+    if include_lowercase:
+        for term in list(og.id_to_term.values()):
+            lowered = term.name.lower()
+            if term.name != lowered:
+                term.synonyms.add(Synonym(lowered, "EXACT"))
 
     # Remove specified synonyms
     term_to_remove_syns_f = pr.resource_filename(
@@ -328,7 +331,7 @@ def most_specific_terms(term_ids, og, sup_relations=["is_a"]):
     )  # TODO Clean this up
 
 
-def parse_obos(ont_to_loc, ont_id, ont_name, restrict_to_idspaces=None, include_obsolete=False):
+def parse_obos(ont_to_loc, ont_id, ont_name, restrict_to_idspaces=None, include_obsolete=False, include_lowercase=False):
     def add_inverse_relationship_to_parents(term, relation, inverse_relation):
         for sup_term_id in [x for x in term.get_related_terms(relation)]:
             if sup_term_id in id_to_term:
@@ -359,6 +362,7 @@ def parse_obos(ont_to_loc, ont_id, ont_name, restrict_to_idspaces=None, include_
             loc,
             restrict_to_idspaces=restrict_to_idspaces,
             include_obsolete=include_obsolete,
+            include_lowercase=include_lowercase,
         )
         id_to_term.update(i_to_t)
         for name, ids in n_to_is.items():
@@ -375,7 +379,7 @@ def parse_obos(ont_to_loc, ont_id, ont_name, restrict_to_idspaces=None, include_
     return OntologyGraph(id_to_term, ont_id, ont_name)
 
 
-def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False):
+def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False, include_lowercase=False):
     """
     Parse OBO file.
     Args:
@@ -388,9 +392,9 @@ def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False):
     """
 
     def process_chunk_of_lines(
-        curr_lines, restrict_to_idspaces, name_to_ids, id_to_term
+        curr_lines, restrict_to_idspaces, name_to_ids, id_to_term, include_lowercase
     ):
-        entity = parse_entity(curr_lines, restrict_to_idspaces)
+        entity = parse_entity(curr_lines, restrict_to_idspaces, include_lowercase)
         if not entity:
             if VERBOSE:
                 print("ERROR!")
@@ -442,14 +446,14 @@ def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False):
                 if not curr_lines:  # nothing has been read yet
                     continue
                 process_chunk_of_lines(
-                    curr_lines, restrict_to_idspaces, name_to_ids, id_to_term
+                    curr_lines, restrict_to_idspaces, name_to_ids, id_to_term, include_lowercase
                 )
                 curr_lines = []
             else:
                 curr_lines.append(line)
         if curr_lines:  # process last chunk of lines at bottom of file
             process_chunk_of_lines(
-                curr_lines, restrict_to_idspaces, name_to_ids, id_to_term
+                curr_lines, restrict_to_idspaces, name_to_ids, id_to_term, include_lowercase
             )
 
         # Create inverse "is_a" and "part_of" edges between terms
@@ -460,7 +464,7 @@ def parse_obo(obo_file, restrict_to_idspaces=None, include_obsolete=False):
     return id_to_term, name_to_ids
 
 
-def parse_entity(lines, restrict_to_idspaces):
+def parse_entity(lines, restrict_to_idspaces, include_lowercase):
     def parse_term_attrs(lines):
         attrs = {}
         for line in lines:
@@ -503,7 +507,7 @@ def parse_entity(lines, restrict_to_idspaces):
 
         return relationships
 
-    def extract_synonyms(raw_syns):
+    def extract_synonyms(raw_syns, include_lowercase):
         """
         Args:
             raw_syns: all of the lines of the OBO file corresponding to synonyms
@@ -523,6 +527,10 @@ def parse_entity(lines, restrict_to_idspaces):
                     print(("error:", syn), file=sys.stderr)
                 parsed_syn = m.group(0)[1:-1].strip()
                 synonyms.add(Synonym(parsed_syn, syn_type))
+                if include_lowercase:
+                    lower_syn = parsed_syn.lower()
+                    if lower_syn != parsed_syn:
+                        synonyms.add(Synonym(lower_syn, syn_type))
         return synonyms
 
     def extract_xrefs(raw_xrefs):
@@ -569,9 +577,9 @@ def parse_entity(lines, restrict_to_idspaces):
             is_obsolete = True if attrs["is_obsolete"][0] == "true" else False
         return is_obsolete
 
-    def parse_synonyms(attrs):
+    def parse_synonyms(attrs, include_lowercase):
         return (
-            extract_synonyms(attrs["synonym"])
+            extract_synonyms(attrs["synonym"], include_lowercase)
             if "synonym" in list(attrs.keys())
             else set()
         )
@@ -645,7 +653,7 @@ def parse_entity(lines, restrict_to_idspaces):
             return ("ERROR PARSING ENTITY", None)
 
         definition = parse_definition(attrs)
-        synonyms = parse_synonyms(attrs)
+        synonyms = parse_synonyms(attrs, include_lowercase)
         is_obsolete = parse_is_obsolete(attrs)
         xrefs = parse_xrefs(attrs)
         xrefs_comments = parse_xrefs_comments(attrs)
