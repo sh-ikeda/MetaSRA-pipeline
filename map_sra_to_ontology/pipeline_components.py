@@ -899,8 +899,9 @@ class Delimit_Stage:
     set of artifacts.
     """
 
-    def __init__(self, delimiter):
+    def __init__(self, delimiter, replace_to_str=True):
         self.delimiter = delimiter
+        self.replace_to_str = replace_to_str
 
     def run(self, text_mining_graph):
         # print("Delimiting artifacts on special character '%s'..." % self.delimiter)
@@ -922,15 +923,16 @@ class Delimit_Stage:
                 node_to_next_nodes[t_node].append(new_t_node)
                 curr_interval_begin += len(split_t_str) + len(self.delimiter)
 
-            # "a-b" -> "a b"
-            replaced_str = t_node.token_str.replace(self.delimiter, " ")
-            new_t_node = TokenNode(
-                replaced_str,
-                t_node.origin_gram_start,
-                t_node.origin_gram_start + len(replaced_str),
-                t_node.origin_key,
-            )
-            node_to_next_nodes[t_node].append(new_t_node)
+            if self.replace_to_str:
+                # "a-b" -> "a b"
+                replaced_str = t_node.token_str.replace(self.delimiter, " ")
+                new_t_node = TokenNode(
+                    replaced_str,
+                    t_node.origin_gram_start,
+                    t_node.origin_gram_start + len(replaced_str),
+                    t_node.origin_key,
+                )
+                node_to_next_nodes[t_node].append(new_t_node)
 
         edge = DerivesInto("Delimiter")
         for s_node, next_nodes in node_to_next_nodes.items():
