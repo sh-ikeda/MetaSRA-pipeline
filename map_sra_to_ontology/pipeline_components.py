@@ -484,8 +484,8 @@ class KeyValueFilter_Stage:
 
 
 class TwoCharMappings_Stage:
-    def __init__(self):
-        with open(TWO_CHAR_MAPPINGS_JSON, "r") as f:
+    def __init__(self, two_char_json=TWO_CHAR_MAPPINGS_JSON):
+        with open(two_char_json, "r") as f:
             self.str_to_mappings = json.load(f)
 
     def run(self, text_mining_graph):
