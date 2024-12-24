@@ -208,6 +208,9 @@ class Pipeline:
                 continue
             else:
                 tm_graph = stage.run(tm_graph)
+            # print(type(stage))
+            # tm_graph.print_as_blitz()
+
             # if isinstance(stage, ExactStringMatching_Stage):
             #     mpt, rvp = self.extract_mapped_terms(tm_graph)
             #     print(tag_to_val)
@@ -234,7 +237,10 @@ class Pipeline:
     def run_multiple(self, tag_to_vals):
         covered_query_map = dict()
         all_mappings = []
+        # j = 1
         for tag_to_val in tag_to_vals:
+            # if j==1:
+            #    print(tag_to_val)
             mapped_terms, real_props, covered_query_map = self.run(
                 tag_to_val, covered_query_map
             )
@@ -243,6 +249,7 @@ class Pipeline:
                 "real_value_properties": [x.to_dict() for x in real_props],
             }
             all_mappings.append(mappings)
+            # j += 1
 
         return all_mappings
 
