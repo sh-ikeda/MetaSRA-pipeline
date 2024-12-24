@@ -1,0 +1,55 @@
+[
+  {
+    "taxIds": ["9606"],
+    "attributes": [
+      {
+        "name": "tissue",
+        "ont_ids": ["12"]
+      },
+      {
+        "name": "cell_type",
+        "ont_ids": ["1"]
+      },
+      {
+        "name": "cell_line",
+        "ont_ids": ["4"]
+      },
+      {
+        "name": "disease",
+        "ont_ids": ["2", "19"]
+      }
+    ]
+  }, {
+    "taxIds": ["10090"],
+    "attributes": [
+      {
+        "name": "tissue",
+        "ont_ids": ["12"]
+      },
+      {
+        "name": "cell_type",
+        "ont_ids": ["1"]
+      },
+      {
+        "name": "cell_line",
+        "ont_ids": ["4"]
+      },
+      {
+        "name": "disease",
+        "ont_ids": ["2", "19"]
+      }
+    ]
+  }, {
+    "taxIds": ["3702"],
+    "attributes": [
+      {
+        "name": "tissue",
+        "ont_ids": ["20"]
+      },
+      {
+        "name": "ecotype",
+        "ont_ids": ["21"]
+      }
+    ]
+  }
+]
