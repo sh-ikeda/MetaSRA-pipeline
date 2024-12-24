@@ -659,13 +659,17 @@ class PropertySpecificSynonym_Stage:
 
 
 class BlockCellLineNonCellLineKey_Stage:
-    def __init__(self, cvcl_og):
-        self.cell_line_keys = set(["EFO:0000322", "EFO:0000324"])
-        self.cell_line_phrases = set(["source name"])
-        # self.cell_line_phrases = set()
+    def __init__(self,
+                 cvcl_og,
+                 cell_line_keys=["EFO:0000322", "EFO:0000324"],
+                 cell_line_phrases=["source name"],
+                 cell_line_keys_low_prior=[],
+                 cell_line_phrases_low_prior=["source name"]):
+        self.cell_line_keys = set(cell_line_keys)
+        self.cell_line_phrases = set(cell_line_phrases)
 
-        self.cell_line_keys_low_prior = set([])
-        self.cell_line_phrases_low_prior = set(["source name"])
+        self.cell_line_keys_low_prior = set(cell_line_keys_low_prior)
+        self.cell_line_phrases_low_prior = set(cell_line_phrases_low_prior)
 
         # cvcl_og, x,y = load_ontology.load("4")
 
