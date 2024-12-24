@@ -70,11 +70,15 @@ NON_SPECIFIC_TERMS_JSON = pr.resource_filename(
     resource_package, join("metadata", "non_specific_terms.json")
 )
 
-
+ONTOLOGY_FOR_ATTRIBUTE_JSON = pr.resource_filename(
+    resource_package, join("metadata", "ontology_for_attribute.json")
+)
 # TOKEN_SCORING_STRATEGY = defaultdict(lambda: 1) # TODO We want an explicit score dictionary
 
 VERBOSE = False
 
+def empty_list():
+    return []
 
 class MappedTerm:
     def __init__(
@@ -195,6 +199,8 @@ class Pipeline:
         for stage in self.stages:
             if isinstance(stage, FuzzyStringMatching_Stage):
                 tm_graph, covered_query_map = stage.run(tm_graph, covered_query_map)
+            elif isinstance(stage, ExactStringMatchingToSpecificOntology_Stage):
+                tm_graph = stage.run(tm_graph, taxId)
             elif isinstance(stage, FilterMappingsToCellLinesByTaxId_Stage):
                 if taxId != "":
                     tm_graph = stage.run(tm_graph, taxId)
@@ -1080,6 +1086,145 @@ class ExactStringMatching_Stage:
 
             # TODO Check for matches in the Trie
             terms = self.map_string(t_node.token_str)
+            for term in terms:
+                match_node = OntologyTermNode(term.id)
+                if t_node.token_str == term.name:
+                    text_mining_graph.add_edge(
+                        t_node,
+                        match_node,
+                        FuzzyStringMatch(
+                            t_node.token_str, term.name, "TERM_NAME", edit_dist=0
+                        ),
+                    )
+                else:
+                    for syn in term.synonyms:
+                        if t_node.token_str == syn.syn_str:
+                            text_mining_graph.add_edge(
+                                t_node,
+                                match_node,
+                                FuzzyStringMatch(
+                                    t_node.token_str,
+                                    syn.syn_str,
+                                    "%s_SYNONYM" % syn.syn_type,
+                                    edit_dist=0,
+                                ),
+                            )
+
+        return text_mining_graph
+
+
+# class ExactStringMatchingToSpecificOntology_Stage:
+#     """
+#     Perform exact-string matching for all artifacts against
+#     an ontology. The ontology to be queried is defined according
+#     to key name. Uses a trie data structure.
+#     """
+
+#     def __init__(
+#         self,
+#         ontology_graphs,
+#         query_len_thresh=None,
+#         match_numeric=False,
+#     ):
+#         self.query_len_thresh = query_len_thresh
+#         self.match_numeric = match_numeric
+#         if VERBOSE:
+#             print("Building trie...")
+#         self.exact_string_matching_stages = {}
+
+#         for og in ontology_graphs:
+#             stage = ExactStringMatching_Stage(
+#                 [og],
+#                 query_len_thresh,
+#                 match_numeric,
+#             )
+#             self.exact_string_matching_stages[og.ont_id] = stage
+
+#     def run(self, ont_ids):
+#         for ont_id in ont_ids:
+#             self.exact_string_matching_stages[ont_id].run()
+#         return
+
+
+class ExactStringMatchingToSpecificOntology_Stage:
+    """
+    Perform exact-string matching for all artifacts against
+    an ontology. The ontology to be queried is defined according
+    to key name. Uses a trie data structure.
+    """
+
+    def __init__(
+        self,
+        ontology_graphs,
+        query_len_thresh=None,
+        match_numeric=False,
+    ):
+        self.query_len_thresh = query_len_thresh
+        self.match_numeric = match_numeric
+        if VERBOSE:
+            print("Building trie...")
+
+        self.og_dict = {}
+
+        for og in ontology_graphs:
+            ont_id = og.ont_id
+            self.og_dict[ont_id] = {}
+            tups = deque()
+            terms_array = deque()
+            curr_i = 0
+            for term in og.get_mappable_terms():
+                terms_array.append(term)
+                tups.append((term.name, [curr_i]))
+                for syn in term.synonyms:
+                    try:
+                        tups.append((syn.syn_str, [curr_i]))
+                    except UnicodeEncodeError:
+                        if VERBOSE:
+                            print(
+                                "Warning! Unable to decode unicode of a synonym \
+                                for term %s"
+                                % term.id
+                            )
+                curr_i += 1
+            map_trie = mt.RecordTrie("<i", tups)
+            self.og_dict[ont_id]["map_trie"] = map_trie
+            self.og_dict[ont_id]["terms_array"] = terms_array
+
+        with open(ONTOLOGY_FOR_ATTRIBUTE_JSON, "r") as f:
+            ontology_for_attribute = json.load(f)
+        self.tax_attr_to_ont_ids = defaultdict(empty_list)
+        for d in ontology_for_attribute:
+            for tax_id in d["taxIds"]:
+                for attr in d["attributes"]:
+                    self.tax_attr_to_ont_ids[(tax_id, attr["name"])] = attr["ont_ids"]
+
+    def map_string(self, query, ont_ids):
+        mapped = []
+        try:
+            for ont_id in ont_ids:
+                results = self.og_dict[ont_id]["map_trie"][query]
+                for r in results:
+                    term = self.og_dict[ont_id]["terms_array"][r[0]]
+                    mapped.append(term)
+
+        except KeyError:
+            # print "Query '%s' not in trie" % query
+            pass
+        return mapped
+
+    def run(self, text_mining_graph, tax_id):
+        # pdb.set_trace()
+        # print("Performing exact string matching...")
+        for t_node in text_mining_graph.token_nodes:
+            # Skip matching tokens according to fuzzy-matching parameters
+            if self.query_len_thresh and len(t_node.token_str) < self.query_len_thresh:
+                continue
+            if not self.match_numeric and is_number(t_node.token_str):
+                continue
+
+            # TODO Check for matches in the Trie
+            ont_ids = self.tax_attr_to_ont_ids[(tax_id, t_node.origin_key)]
+            terms = self.map_string(t_node.token_str, ont_ids)
             for term in terms:
                 match_node = OntologyTermNode(term.id)
                 if t_node.token_str == term.name:
