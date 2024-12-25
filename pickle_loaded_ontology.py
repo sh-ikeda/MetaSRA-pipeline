@@ -21,7 +21,7 @@ def main():
 
     log_time("pickle dump")
     with open(output_filename, "wb") as f:
-        pickle.dump((og, i, r), f)
+        pickle.dump((og, ontology_index, include_lowercase, i, r), f)
         log_time("Done.")
 
 
