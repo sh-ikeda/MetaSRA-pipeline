@@ -1,0 +1,21 @@
+[
+  {
+    "id": "1",
+    "name": "original",
+    "description": "(semi-)original version",
+    "output_filename": "pipeline_init_eval_original.pickle",
+    "stages": {
+      "ontologies": ["CVCL.pickle"],
+      "replace_to_space": false,
+      "do_inflec_var": false,
+      "do_man_at_syn": true,
+      "exact_match_thresh": 3,
+      "do_two_char_match": true,
+      "two_char_match_json": "two_char_mappings_original.json",
+      "do_match_cust_targs": true,
+      "do_block_cell_line_key": true,
+      "do_filt_match_priority": true,
+      "do_prioritize_exact": true
+    }
+  }
+]
