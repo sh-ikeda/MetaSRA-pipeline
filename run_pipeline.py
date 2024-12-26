@@ -41,14 +41,6 @@ def main():
         default=pr.resource_filename(__name__, "pipeline_init.pickle"),
     )
     parser.add_option(
-        "-k",
-        "--keywords",
-        help="specified mapping keywords json",
-        dest="keywords_filename",
-        type="str",
-        default="",
-    )
-    parser.add_option(
         "-n",
         "--processes",
         help="# of processes",
@@ -135,11 +127,6 @@ def main():
         vars = pickle.load(f)
         pipeline = vars[0]
         ont_id_to_og = vars[1]
-
-    # TWO_CHAR_MAPPINGS_JSON = "/mnt/c/Users/togotv_dell1/work/biosample/MetaSRA-pipeline/map_sra_to_ontology/metadata/two_char_mappings.json"
-    if keywords_f != "":
-        with open(keywords_f, "r") as f:
-            pipeline.stages[14].str_to_mappings = json.load(f)
 
     all_mappings = []
     log_time(f"Mapping with {processes} processes")
