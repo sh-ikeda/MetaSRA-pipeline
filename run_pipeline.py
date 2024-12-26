@@ -79,7 +79,7 @@ def main():
 
     input_f = options.input_filename
     output_f = options.output_filename
-    init_dill = options.init_dill
+    init_pickle = options.init_pickle
     processes = options.processes
     debug_mode = options.debug_mode
     keywords_f = options.keywords_filename
@@ -123,7 +123,7 @@ def main():
 
     # Load ontologies
     log_time("Initializing pipeline.")
-    with open(init_dill, "rb") as f:
+    with open(init_pickle, "rb") as f:
         vars = pickle.load(f)
         pipeline = vars[0]
         ont_id_to_og = vars[1]
