@@ -485,7 +485,7 @@ class LongKeyValueFilter_Stage:
         remove_kv_nodes = [
             x
             for x in text_mining_graph.key_val_nodes
-            if x.key > self.length_threshold or x.value > self.length_threshold
+            if len(x.key) > self.length_threshold or len(x.value) > self.length_threshold
         ]
         for kv_node in remove_kv_nodes:
             text_mining_graph.delete_node(kv_node)
