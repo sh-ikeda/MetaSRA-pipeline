@@ -67,7 +67,7 @@
       "exact_match_thresh": 1,
       "do_two_char_match": false,
       "do_match_cust_targs": false,
-      "do_block_cell_line_key": true,
+      "do_block_cell_line_key": false,
       "do_filt_match_priority": false,
       "do_prioritize_exact": false
     }
