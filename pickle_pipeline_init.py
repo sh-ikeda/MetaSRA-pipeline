@@ -10,9 +10,10 @@ from map_sra_to_ontology import config
 from map_sra_to_ontology import pipeline_components as pc
 from map_sra_to_ontology.utils import log_time
 
+resource_package = __name__
+
 
 def create_pipeline(ont_id_to_og, pipeline_config):
-    resource_package = __name__
     conf = defaultdict(lambda: False)
     for k in pipeline_config["stages"]:
         conf[k] = pipeline_config["stages"][k]
@@ -126,7 +127,11 @@ def main():
     # for ont_name in list(ont_name_to_ont_id.keys()):
     for ont_pickle in ont_pickle_filenames:
         log_time(ont_pickle)
-        with open(ont_pickle, "rb") as f:
+        ont_pickle_path = pr.resource_filename(
+            resource_package,
+            join("setup_map_sra_to_ontology", "ontology_pickle", ont_pickle)
+        )
+        with open(ont_pickle_path, "rb") as f:
             og_info = pickle.load(f)
             ont_id_to_og[og_info[1]] = og_info[0]
     pipeline = create_pipeline(ont_id_to_og, pipeline_config)
