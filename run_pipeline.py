@@ -176,27 +176,8 @@ def main():
 
     log_time("Run pipeline on key vals")
     outputs = []
-    output_for_prediction = []
-    vectorizer_f = pr.resource_filename(
-        __name__,
-        join(
-            "map_sra_to_ontology", "predict_sample_type", "sample_type_vectorizor.dill"
-        ),
-    )
-    classifier_f = pr.resource_filename(
-        __name__,
-        join(
-            "map_sra_to_ontology", "predict_sample_type", "sample_type_classifier.dill"
-        ),
-    )
-    with open(vectorizer_f, "rb") as f:
-        vectorizer = dill.load(f)
-    with open(classifier_f, "rb") as f:
-        model = dill.load(f)
     for tag_to_val, mappings in zip(tag_to_vals, all_mappings):
-        result = run_pipeline_on_key_vals(
-            tag_to_val, ont_id_to_og, mappings, vectorizer, model
-        )
+        result = run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mappings)
         outputs.append(result)
 
     log_time("Writing.")
@@ -211,14 +192,10 @@ def main():
     else:
         print_as_tsv(outputs, tag_to_vals, output_f, ont_id_to_og, include_cvcl)
 
-    # with open("for_sample_type_prediction"+output_f, mode='w') as f:
-    #     output_json = json.dumps(output_for_prediction,
-    #                              indent=4, separators=(',', ': '))
-    #     f.write(output_json)
     log_time("Done.")
 
 
-def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data, vectorizer, model):
+def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
     mapped_terms = []
     real_val_props = []
     mapped_terms_details = []
@@ -251,27 +228,16 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data, vectorizer,
             sup_terms.update(og.recursive_relationship(term_id, ["is_a", "part_of"]))
     mapped_terms = list(sup_terms)
 
-    # predicted, confidence = run_sample_type_predictor.run_sample_type_prediction(
-    #     tag_to_val, mapped_terms, real_val_props, vectorizer, model
-    # )
-    # for_sample_type_prediction = {
-    #     "tag_to_val": tag_to_val,
-    #     "mapped_terms": mapped_terms,
-    #     "real_val_props": real_val_props
-    # }
-
     mapping_data = {
         "mapped ontology terms": mapped_terms_details,
         "real-value properties": real_val_props,
-        # "sample type": predicted,
-        # "sample-type confidence": confidence,
     }
 
     accession = tag_to_val.get("accession")
     if accession:
         mapping_data["accession"] = accession
 
-    return mapping_data  # , for_sample_type_prediction
+    return mapping_data
 
 
 def print_as_tsv(mappings, tag_to_vals, output_f, ont_id_to_og, include_cvcl=False):  # ont_id_to_og,
