@@ -23,6 +23,10 @@ def create_pipeline(ont_id_to_og, pipeline_config):
     log_time("key_val_filt")
     stages.append(pc.KeyValueFilter_Stage())
 
+    if conf["do_long_filt"]:
+        log_time("long_filt")
+        stages.append(pc.LongKeyValueFilter_Stage())
+
     log_time("init_tokens_stage")
     stages.append(pc.InitKeyValueTokens_Stage())
 

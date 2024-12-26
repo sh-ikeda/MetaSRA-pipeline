@@ -42,6 +42,7 @@
     "description": "improved version",
     "stages": {
       "ontologies": ["CVCL_lower.pickle"],
+      "do_long_filt": true,
       "replace_to_space": true,
       "do_inflec_var": false,
       "do_spell_var": true,

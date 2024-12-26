@@ -158,13 +158,11 @@ class Pipeline:
     def __init__(self, stages):
         self.stages = stages
         # self.scoring_strategy = scoring_strategy
-        self.text_length_limit = 100
 
     def run(self, tag_to_val, covered_query_map, options={}):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
         taxId = ""
         disable_cell_line_restriction = options["disable_cell_line_restriction"]
-        disable_long_text_restriction = options["disable_long_text_restriction"]
 
         # Create initial text-mining-graph
         for tag, val in tag_to_val.items():
@@ -178,9 +176,8 @@ class Pipeline:
             if tag == "accession":
                 continue
             for v in val:
-                if (not disable_long_text_restriction) and len(v) <= self.text_length_limit:
-                    kv_node = KeyValueNode(tag, v)
-                    tm_graph.add_node(kv_node)
+                kv_node = KeyValueNode(tag, v)
+                tm_graph.add_node(kv_node)
 
         # is_first = True
         # for stage in self.stages:
@@ -480,6 +477,21 @@ class KeyValueFilter_Stage:
             ]
             for kv_node in remove_kv_nodes:
                 text_mining_graph.delete_node(kv_node)
+        return text_mining_graph
+
+
+class LongKeyValueFilter_Stage:
+    def __init__(self, length_threshold=100):
+        self.length_threshold = length_threshold
+
+    def run(self, text_mining_graph):
+        remove_kv_nodes = [
+            x
+            for x in text_mining_graph.key_val_nodes
+            if x.key > self.length_threshold or x.value > self.length_threshold
+        ]
+        for kv_node in remove_kv_nodes:
+            text_mining_graph.delete_node(kv_node)
         return text_mining_graph
 
 
