@@ -8,11 +8,9 @@
 from optparse import OptionParser
 import json
 import sys
-import dill
 from multiprocessing import Pool
 import pkg_resources as pr
 from map_sra_to_ontology.utils import log_time
-from os.path import join
 import rdflib
 import urllib
 import pickle
@@ -38,9 +36,8 @@ def main():
     parser.add_option(
         "-i",
         "--init",
-        help="init dill file",
-        dest="init_dill",
-        # default=pr.resource_filename(__name__, "pipeline_init.dill"))
+        help="init pickle file",
+        dest="init_pickle",
         default=pr.resource_filename(__name__, "pipeline_init.pickle"),
     )
     parser.add_option(
@@ -134,9 +131,7 @@ def main():
 
     # Load ontologies
     log_time("Initializing pipeline.")
-    # dill.load_session(init_dill)
     with open(init_dill, "rb") as f:
-        # vars = dill.load(f)
         vars = pickle.load(f)
         pipeline = vars[0]
         ont_id_to_og = vars[1]
