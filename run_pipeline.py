@@ -58,22 +58,6 @@ def main():
         dest="include_cvcl",
         action="store_true",
     )
-    parser.add_option(
-        "-r",
-        "--disable_cell_line_restriction",
-        help="Disable restriction of attributes allowed to be mapped to CVCL term",
-        dest="disable_cell_line_restriction",
-        action="store_true",
-        default=False,
-    )
-    parser.add_option(
-        "-l",
-        "--disable_long_text_restriction",
-        help="Disable restriction of attributes with a value of length longer than 100 chars",
-        dest="disable_long_text_restriction",
-        action="store_true",
-        default=False,
-    )
     (options, args) = parser.parse_args()
 
     input_f = options.input_filename
@@ -84,10 +68,6 @@ def main():
     test_mode = options.test_mode
     include_cvcl = options.include_cvcl
 
-    pipeline_options = {
-        "disable_cell_line_restriction": options.disable_cell_line_restriction,
-        "disable_long_text_restriction": options.disable_long_text_restriction,
-    }
     # Map key-value pairs to ontologies
     with open(input_f, "r", encoding="utf-8") as f:
         biosample_json = json.load(f)
@@ -136,9 +116,7 @@ def main():
             if i % 10 == 0 and debug_mode:
                 log_time(str(i) + " / " + str(n_of_samples))
             i += 1
-            mapped_terms, real_props, covered_query_map = pipeline.run(
-                tag_to_val, covered_query_map, pipeline_options
-            )
+            mapped_terms, real_props, covered_query_map = pipeline.run(tag_to_val, covered_query_map)
             mappings = {
                 "mapped_terms": [x.to_dict() for x in mapped_terms],
                 "real_value_properties": [x.to_dict() for x in real_props],

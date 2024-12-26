@@ -162,7 +162,6 @@ class Pipeline:
     def run(self, tag_to_val, covered_query_map, options={}):
         tm_graph = TextReasoningGraph(prohibit_cycles=False)
         taxId = ""
-        disable_cell_line_restriction = options["disable_cell_line_restriction"]
 
         # Create initial text-mining-graph
         for tag, val in tag_to_val.items():
@@ -201,8 +200,6 @@ class Pipeline:
             elif isinstance(stage, FilterMappingsToCellLinesByTaxId_Stage):
                 if taxId != "":
                     tm_graph = stage.run(tm_graph, taxId)
-            elif disable_cell_line_restriction and isinstance(stage, BlockCellLineNonCellLineKey_Stage):
-                continue
             else:
                 tm_graph = stage.run(tm_graph)
             # print(type(stage))
