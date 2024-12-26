@@ -14,7 +14,6 @@ from map_sra_to_ontology.utils import log_time
 import rdflib
 import urllib
 import pickle
-import xlsxwriter
 
 
 def main():
@@ -82,7 +81,6 @@ def main():
     init_pickle = options.init_pickle
     processes = options.processes
     debug_mode = options.debug_mode
-    keywords_f = options.keywords_filename
     test_mode = options.test_mode
     include_cvcl = options.include_cvcl
 
@@ -169,8 +167,6 @@ def main():
             f.write(output_json)
     elif output_f.split(".")[-1] == "ttl":
         print_as_turtle(outputs, output_f)
-    elif output_f.split(".")[-1] == "xlsx":
-        print_as_xlsx(outputs, output_f)
     else:
         print_as_tsv(outputs, tag_to_vals, output_f, ont_id_to_og, include_cvcl)
 
@@ -426,101 +422,6 @@ def print_as_turtle(mappings, output_filename):
     if output_filename != "":
         output_file.close()
     return
-
-
-def print_as_xlsx(mappings, output_filename):
-    book = xlsxwriter.Workbook(output_filename)
-    sheet = book.add_worksheet()
-
-    sheet.write(0, 0, "accession")
-    sheet.write(0, 1, "original_key")
-    sheet.write(0, 2, "original_value")
-    sheet.write(0, 3, "mapped_term_id")
-    sheet.write(0, 4, "mapped_term_name")
-    sheet.write(0, 5, "full_length_match")
-    sheet.write(0, 6, "exact_match")
-    sheet.write(0, 7, "mapped_term_uri")
-    sheet.write(0, 8, "OLS_search")
-
-    row_i = 1
-    for sample in mappings:
-        if len(sample["mapped ontology terms"]) == 0:
-            sheet.write(row_i, 0, sample["accession"])
-            row_i += 1
-        for mt in sample["mapped ontology terms"]:
-            font = book.add_format({"color": "red", "bold": True})
-            sheet.write(row_i, 0, sample["accession"])
-            sheet.write(row_i, 1, mt["original_key"])
-            start = mt["origin_pos"][0]
-            end = mt["origin_pos"][1]
-            if start == 0 and end == len(mt["original_value"]):
-                sheet.write(row_i, 2, mt["original_value"][start:end], font)
-            elif start == 0:
-                sheet.write_rich_string(
-                    row_i,
-                    2,
-                    font,
-                    mt["original_value"][start:end],
-                    mt["original_value"][end:],
-                )
-            elif end == len(mt["original_value"]):
-                sheet.write_rich_string(
-                    row_i,
-                    2,
-                    mt["original_value"][0:start],
-                    font,
-                    mt["original_value"][start:end],
-                )
-            else:
-                sheet.write_rich_string(
-                    row_i,
-                    2,
-                    mt["original_value"][0:start],
-                    font,
-                    mt["original_value"][start:end],
-                    mt["original_value"][end:],
-                )
-            sheet.write(row_i, 3, mt["term_id"])
-            sheet.write(row_i, 4, mt["term_name"])
-            sheet.write(row_i, 5, mt["full_length_match"])
-            sheet.write(row_i, 6, mt["exact_match"])
-
-            ont = mt["term_id"].split(":")[0]
-            if ont == "EFO":
-                sheet.write_url(
-                    row_i,
-                    7,
-                    "http://www.ebi.ac.uk/efo/" + mt["term_id"].replace(":", "_"),
-                )
-            elif ont == "Orphanet":
-                sheet.write_url(
-                    row_i,
-                    7,
-                    "http://www.orpha.net/ORDO/" + mt["term_id"].replace(":", "_"),
-                )
-            elif ont == "CVCL":
-                sheet.write_url(
-                    row_i,
-                    7,
-                    "http://web.expasy.org/cellosaurus/"
-                    + mt["term_id"].replace(":", "_"),
-                )
-            else:
-                sheet.write_url(
-                    row_i,
-                    7,
-                    "http://purl.obolibrary.org/obo/" + mt["term_id"].replace(":", "_"),
-                )
-
-            sheet.write_url(
-                row_i,
-                8,
-                "https://www.ebi.ac.uk/ols/search?q="
-                + urllib.parse.quote_plus(mt["original_value"].replace("_", " ")),
-            )
-            row_i += 1
-
-    book.close()
 
 
 if __name__ == "__main__":
