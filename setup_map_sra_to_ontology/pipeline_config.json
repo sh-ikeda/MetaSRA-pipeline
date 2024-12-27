@@ -5,6 +5,7 @@
     "description": "(semi-)original version",
     "stages": {
       "ontologies": ["CVCL.pickle"],
+      "do_long_filt": true,
       "replace_to_space": false,
       "do_inflec_var": false,
       "do_spell_var": true,
@@ -24,6 +25,7 @@
     "description": "(semi-)original version without restriction for attributes to allow mappings to CVCL and for string length",
     "stages": {
       "ontologies": ["CVCL.pickle"],
+      "do_long_filt": true,
       "replace_to_space": false,
       "do_inflec_var": false,
       "do_spell_var": true,
