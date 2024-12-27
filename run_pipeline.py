@@ -270,7 +270,7 @@ def print_as_turtle(mappings, output_filename):
     else:
         output_file = open(output_filename, mode="w")
 
-    with open(pr.resource_filename(__name__, "ont_prefix_to_uri.json")) as f:
+    with open(pr.resource_filename(__name__, "map_sra_to_ontology", "ont_prefix_to_uri.json")) as f:
         ont_prefix_to_uri = json.load(f)
 
     g = rdflib.Graph()
