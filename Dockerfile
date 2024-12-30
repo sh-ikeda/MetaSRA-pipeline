@@ -21,4 +21,5 @@ ENV PYTHONPATH /app/MetaSRA-pipeline/:/app/MetaSRA-pipeline/bktree/:/app/MetaSRA
 ### dill fails during automated build on Docker hub because it requires ~4GB RAM
 # RUN python3 dill_pipeline_init.py
 
-CMD ["python3", "/app/MetaSRA-pipeline/run_pipeline.py"]
+ENTRYPOINT ["python3", "run_pipeline.py"]
+CMD ["-h"]
