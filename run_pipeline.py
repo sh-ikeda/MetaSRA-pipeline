@@ -7,6 +7,7 @@
 
 from optparse import OptionParser
 import json
+import os
 import sys
 from multiprocessing import Pool
 import pkg_resources as pr
@@ -69,8 +70,14 @@ def main():
     include_cvcl = options.include_cvcl
 
     # Map key-value pairs to ontologies
-    with open(input_f, "r", encoding="utf-8") as f:
-        biosample_json = json.load(f)
+    if os.path.splitext(input_f) == "jsonl":
+        biosample_json = []
+        with open(input_f, "r", encoding="utf-8") as f:
+            for line in f:
+                biosample_json.append(json.loads(line))
+    else:
+        with open(input_f, "r", encoding="utf-8") as f:
+            biosample_json = json.load(f)
 
     tag_to_vals = []
     log_time("Parsing BioSample JSON")
