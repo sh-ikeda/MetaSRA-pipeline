@@ -70,7 +70,7 @@ def main():
     include_cvcl = options.include_cvcl
 
     # Map key-value pairs to ontologies
-    if os.path.splitext(input_f) == "jsonl":
+    if os.path.splitext(input_f)[-1] == ".jsonl":
         biosample_json = []
         with open(input_f, "r", encoding="utf-8") as f:
             for line in f:
