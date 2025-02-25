@@ -9,14 +9,44 @@ The MetaSRA can be searched and downloaded from: http://metasra.biostat.wisc.edu
 ## Usage of the Docker version
 ```sh
 docker pull shikeda/metasra:latest
-docker run -v `pwd`:/data --rm shikeda/metasra:latest -c -d -f /data/input.json -i config/pipeline_init.pickle -o /data/output.tsv
+docker run -v `pwd`:/data --rm shikeda/metasra:latest -c -v -f /data/input.json -i config/pipeline_init.pickle -o /data/output.tsv
 ```
+- `-c`  
+  For the mapped Cellosaurus terms, the summary of the terms is included in the output. This is required for the selection mode of [bsllmner](https://github.com/sh-ikeda/bsllmner).
+- `-v`  
+  Output log
 - `-f /data/input.json`  
-  Specify the input file path. The input json file is assumed to be formatted as the format of json provided by the API of EBI BioSamples. [example](https://www.ebi.ac.uk/biosamples/samples/SAMN13719297.json)
+  Specify the input file path. The input json file is assumed to have a list of objects formatted as the format of json provided by the API of EBI BioSamples. [example](https://www.ebi.ac.uk/biosamples/samples/SAMN13719297.json)  
+  JSON-lines format is also available.
 - `-i config/pipeline_init.pickle`  
   Specify the pipeline configuration file. For standard usage, use `config/pipeline_init.pickle`.
 - `-o /data/output.tsv`  
   Specify the output file name.
+### Output tsv
+
+| BioSample ID | Attribute key | Attribute value | Mapped term ID | Mapped term label | Is consequent | Is full length match | Is exact match | Match target    | Mapped CVCL summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| SAMD00123367 | cell_line     | H1299           | CVCL:0060      | NCI-H1299         | False         | True                 | True           | RELATED_SYNONYM | {"id": "CVCL:0060", "name": "NCI-H1299", "synonyms": [{"name": "NCIH1299", "type": "RELATED"}, {"name": "nci-h1299", "type": "EXACT"}, {"name": "h-1299", "type": "RELATED"}, {"name": "H1299", "type": "RELATED"}, {"name": "h1299", "type": "RELATED"}, {"name": "ncih1299", "type": "RELATED"}, {"name": "H-1299", "type": "RELATED"}], "subsets": ["Cancer_cell_line", "Male"], "xrefs": ["NCIt:C4450", "NCBI_TaxID:9606"], "xrefs_comments": ["Lung large cell carcinoma", "Homo sapiens (Human)"]} |
+
+- `BioSample ID`  
+  The BioSample ID of the record.
+- `Attribute key`  
+  The key of the attribute that was mapped to an ontology term.
+- `Attribute value`  
+  The value of the attribute that was mapped to an ontology term.
+- `Mapped term ID`  
+  The ID of the mapped ontology term.
+- `Mapped term label`  
+  The label of the mapped ontology term.
+- `Is consequent`  
+  Whether the term is mapped to the record via the MetaSRA-custom synonyms.
+- `Is full length match`  
+  Whether the full length of the attribute value was matched to the ontology term's label.
+- `Is exact match`  
+  Whether the attribute value was exactly matched to the ontology term's label.
+- `Match target`  
+  Type of the label matched to the attribute value. e.g. TERM_NAME, RELATED_SYNONYM, etc.
+- `Mapped CVCL summary`  
+  The summary of the mapped Cellosaurus terms (included only when `-c` is used).
 
 ## Usage in local environment
 
