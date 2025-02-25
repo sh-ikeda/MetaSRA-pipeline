@@ -49,7 +49,7 @@ def main():
         default=1,
     )
     parser.add_option(
-        "-d", "--debug", help="debug mode", dest="debug_mode", action="store_true"
+        "-v", "--verbose", help="verbose mode", dest="verbose_mode", action="store_true"
     )
     parser.add_option("-t", "--test", help="test mode", dest="test_mode", action="store_true")
     parser.add_option(
@@ -65,7 +65,7 @@ def main():
     output_f = options.output_filename
     init_pickle = options.init_pickle
     processes = options.processes
-    debug_mode = options.debug_mode
+    verbose_mode = options.verbose_mode
     test_mode = options.test_mode
     include_cvcl = options.include_cvcl
 
@@ -120,7 +120,7 @@ def main():
         n_of_samples = str(len(tag_to_vals))
         covered_query_map = dict()
         for tag_to_val in tag_to_vals:
-            if i % 10 == 0 and debug_mode:
+            if i % 10 == 0 and verbose_mode:
                 log_time(str(i) + " / " + str(n_of_samples))
             i += 1
             mapped_terms, real_props, covered_query_map = pipeline.run(tag_to_val, covered_query_map)
