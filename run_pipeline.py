@@ -48,6 +48,7 @@ def main():
         type="int",
         default=1,
     )
+    parser.add_option("--without_header", help="Exclude header in output tsv", action="store_true")
     parser.add_option(
         "-v", "--verbose", help="verbose mode", dest="verbose_mode", action="store_true"
     )
@@ -68,6 +69,7 @@ def main():
     verbose_mode = options.verbose_mode
     test_mode = options.test_mode
     include_cvcl = options.include_cvcl
+    without_header = options.without_header
 
     # Map key-value pairs to ontologies
     if os.path.splitext(input_f)[-1] == ".jsonl":
@@ -153,7 +155,7 @@ def main():
     elif output_f.split(".")[-1] == "ttl":
         print_as_turtle(outputs, output_f)
     else:
-        print_as_tsv(outputs, tag_to_vals, output_f, ont_id_to_og, include_cvcl)
+        print_as_tsv(outputs, tag_to_vals, output_f, ont_id_to_og, without_header, include_cvcl)
 
     log_time("Done.")
 
@@ -203,9 +205,14 @@ def run_pipeline_on_key_vals(tag_to_val, ont_id_to_og, mapping_data):
     return mapping_data
 
 
-def print_as_tsv(mappings, tag_to_vals, output_f, ont_id_to_og, include_cvcl=False):  # ont_id_to_og,
+def print_as_tsv(mappings, tag_to_vals, output_f, ont_id_to_og, without_header, include_cvcl=False):
     acc_to_kvs = {}
     lines = ""
+    if not without_header:
+        lines = "BioSample ID\tAttribute key\tAttribute value\tMapped term ID\tMapped term label\tIs consequent\tIs full length match\tIs exact match\tMatch target"
+        if include_cvcl:
+            lines += "\t Mapped CVCL summary"
+
     for tag_to_val in tag_to_vals:
         acc_to_kvs[tag_to_val["accession"]] = tag_to_val
 
